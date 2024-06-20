@@ -1,6 +1,13 @@
+import recognizer
+
 acceptors = []
+
 senders = [
     {
-        "name": "vosk_recognize",
+        "name": "vosk_send"
     }
+]
+
+workers = [
+    recognizer.run_vosk
 ]

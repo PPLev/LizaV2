@@ -36,7 +36,7 @@ logger = logging.getLogger("root")
 #     return "Не распознано("
 
 
-async def run_vosk(model_dir_path: str, queue: queues.Queue, input_device_id=-1):
+async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Queue = None):
     """
     Распознование библиотекой воск
     """
@@ -69,18 +69,9 @@ async def run_vosk(model_dir_path: str, queue: queues.Queue, input_device_id=-1)
             voice_input_str = recognized_data["text"]
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
-                await queue.put(
+                await vosk_send.put(
                     {
                         "type": "text",
                         "value": voice_input_str
                     }
                 )
-
-
-async def main(sender_queues, acceptor_queues):
-    with open("settings.json", "r", encoding="utf-8") as file:
-        settings = json.load(file)
-
-    vosk_task = asyncio.create_task(run_vosk(**settings, queue=acceptor_queues["vosk_recognize"]), name="vosk")
-
-    return vosk_task
