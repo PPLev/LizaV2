@@ -1,0 +1,7 @@
+{
+  "version": "0.1",
+  "type": "process",
+  "worker": "worker",
+  "model_dir_path": ".model",
+  "input_device_id": -1
+}
