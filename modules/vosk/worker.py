@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import sys
-import wave
 
 # import soundfile
 # import sounddevice
@@ -41,11 +40,6 @@ async def run_vosk(model_dir_path: str, queue: queues.Queue, input_device_id=-1)
     """
     Распознование библиотекой воск
     """
-    #:TODO настройка устройства вывода потом переписать
-    # sounddevice.default.device = (1, None)
-    # dev_out = sounddevice.query_devices(kind="input")
-    # print(dev_out)
-    # print(sounddevice.check_output_settings())
 
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,
@@ -81,14 +75,6 @@ async def run_vosk(model_dir_path: str, queue: queues.Queue, input_device_id=-1)
                         "value": voice_input_str
                     }
                 )
-
-
-# async def start_with_options(core: Core, manifest: dict):
-#     global model_settings, input_device_id
-#     model_settings = manifest["options"]["model_settings"]
-#     input_device_id = manifest["options"]["input_device_id"]
-#     asyncio.run_coroutine_threadsafe(run_vosk(), asyncio.get_running_loop())
-#     core.recognize_file = recognize_file
 
 
 async def main(sender_queues, acceptor_queues):

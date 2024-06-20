@@ -1,5 +1,6 @@
 {
   "version": "0.1",
+  "is_active": true,
   "type": "process",
   "worker": "worker",
   "model_dir_path": ".model",
