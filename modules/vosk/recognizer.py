@@ -8,7 +8,6 @@ import sys
 import vosk
 import pyaudio
 import logging
-from asyncio import queues
 
 logger = logging.getLogger("root")
 
@@ -36,7 +35,7 @@ logger = logging.getLogger("root")
 #     return "Не распознано("
 
 
-async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Queue = None):
+async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Queue = None, **kwargs):
     """
     Распознование библиотекой воск
     """
@@ -71,7 +70,7 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Q
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
                 await vosk_send.put(
                     {
-                        "type": "text",
+                        "type": "user_command",
                         "value": voice_input_str
                     }
                 )

@@ -4,10 +4,7 @@ acceptors = []
 
 senders = [
     {
-        "name": "vosk_send"
+        "name": "vosk_send",
+        "func": recognizer.run_vosk
     }
-]
-
-workers = [
-    recognizer.run_vosk
 ]

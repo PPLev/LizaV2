@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class EventTypes:
     text = "text"
+    user_command = "user_command"
 
 
 class Event:
@@ -23,4 +24,3 @@ class Event:
             **data
         )
         return event
-
