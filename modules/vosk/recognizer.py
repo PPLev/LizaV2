@@ -8,6 +8,7 @@ import sys
 import vosk
 import pyaudio
 import logging
+from event import EventTypes, Event
 
 logger = logging.getLogger("root")
 
@@ -35,7 +36,7 @@ logger = logging.getLogger("root")
 #     return "Не распознано("
 
 
-async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Queue = None, **kwargs):
+async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue = None, **kwargs):
     """
     Распознование библиотекой воск
     """
@@ -68,9 +69,9 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, vosk_send: asyncio.Q
             voice_input_str = recognized_data["text"]
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
-                await vosk_send.put(
-                    {
-                        "type": "user_command",
-                        "value": voice_input_str
-                    }
+                await queue.put(
+                    Event(
+                        event_type=EventTypes.user_command,
+                        value=voice_input_str
+                    )
                 )

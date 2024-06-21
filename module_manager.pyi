@@ -1,6 +1,13 @@
 import asyncio
 import json
 import os
+from dataclasses import dataclass
+from typing import List
+
+@dataclass
+class SubModule:
+    acceptors: List[dict]
+    senders: List[dict]
 
 
 class Module:
@@ -9,7 +16,7 @@ class Module:
         with open(f"{self.name}/settings.json", "r", encoding="utf-8") as file:
             self.settings: dict = json.load(file)
 
-        self.module = __import__(f"modules.{self.name}.main")
+        self.module: SubModule = __import__(f"modules.{self.name}.main")
 
         self.acceptor_queues = {
             i["name"]: asyncio.Queue() for i in self.module.acceptors
@@ -19,8 +26,8 @@ class Module:
             i["name"]: asyncio.Queue() for i in self.module.senders
         }
 
-        for worker in self.module.workers:
-            asyncio.create_task(worker(**self.settings, **self.acceptor_queues, **self.senders_queues))
+        for sender in self.module.senders:
+            asyncio.create_task(sender["function"](**self.settings, queue = self.senders_queues[sender["name"]]))
 
         self.intents = {}
         self.version = ""
