@@ -34,10 +34,16 @@ class Module:
         self.acceptor_queues = None
         self.senders_queues = None
         self.name = name
-        with open(f"{self.name}/settings.json", "r", encoding="utf-8") as file:
+        if not os.path.isfile(f"modules/{self.name}/settings.json"):
+            print(f"modules/{self.name}/settings.json not found, module {self.name} not init")
+            return
+        with open(f"modules/{self.name}/settings.json", "r", encoding="utf-8") as file:
             self.settings: Settings = Settings.from_dict(json.load(file))
 
-        self.module: SubModule = __import__(f"modules.{self.name}.main")
+        if not self.settings.is_active:
+            return
+
+        self.module: SubModule = getattr(__import__(f"modules.{self.name}.main"), self.name).main
 
         if hasattr(self.module, "senders"):
             self.init_as_sender()
@@ -79,12 +85,9 @@ class ModuleManager:
         self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}")]
         self.modules = {}
 
-    def list(self):
-        for module_name in self.name_list:
-            pass
-
     def init_modules(self):
-        pass
+        for module_name in self.name_list:
+            self.modules[module_name] = Module(name=module_name)
 
     def get_modules(self):
         pass

@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from event import EventTypes
@@ -14,13 +15,14 @@ class Core:
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-
-    async def init(self):
         with open(self.connection_config_path, "r", encoding="utf-8") as file:
             self.connection_data = json.load(file)
 
     async def run(self):
-        await self.MM.init_modules()
+        self.MM.init_modules()
+
+        while True:
+            await asyncio.sleep(0)
 
     async def event_work(self, event):
         if event.event_type == EventTypes.text:

@@ -5,7 +5,7 @@
     "sender"
   ],
   "config": {
-    "model_dir_path": ".model",
+    "model_dir_path": "modules/vosk/model",
     "input_device_id": -1
   }
 }

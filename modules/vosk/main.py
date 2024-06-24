@@ -1,11 +1,11 @@
-import recognizer
+from .recognizer import run_vosk
 
 acceptors = []
 
 senders = [
     {
         "name": "vosk_send",
-        "func": recognizer.run_vosk
+        "function": run_vosk
     }
 ]
 
