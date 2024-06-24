@@ -1,7 +1,11 @@
 {
   "version": "0.1",
   "is_active": true,
-  "type": "process",
-  "model_dir_path": ".model",
-  "input_device_id": -1
+  "types": [
+    "sender"
+  ],
+  "config": {
+    "model_dir_path": ".model",
+    "input_device_id": -1
+  }
 }

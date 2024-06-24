@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Модули/Типы.md",
+                "file": "Модули/Интенты.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Модули/Типы.md",
+                "file": "Модули/Интенты.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Модули/Типы.md",
+                "file": "Модули/Интенты.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Модули/Типы.md"
+                "file": "Модули/Интенты.md"
               }
             }
           }
@@ -148,10 +148,10 @@
   },
   "active": "be722ba5dbb1d487",
   "lastOpenFiles": [
-    "Модули/Интенты.md",
-    "Модули/Типы.md",
-    "Модули",
     "АПИ Ивенов.md",
+    "Модули/Типы.md",
+    "Модули/Интенты.md",
+    "Модули",
     "Главная.md"
   ]
 }

@@ -8,3 +8,5 @@ senders = [
         "func": recognizer.run_vosk
     }
 ]
+
+intents = []
