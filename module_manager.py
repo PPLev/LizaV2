@@ -7,6 +7,7 @@ from typing import List, Dict
 
 logger = logging.getLogger("root")
 
+
 @dataclass
 class SubModule:
     acceptors: List[dict]
@@ -60,10 +61,6 @@ class Module:
                 coro=sender["function"](**self.settings.config, queue=self.senders_queues[sender["name"]]),
                 loop=asyncio.get_running_loop()
             )
-            # await asyncio.create_task(
-            #     coro=sender["function"](**self.settings.config, queue=self.senders_queues[sender["name"]]),
-            #     name=sender["name"]
-            # )
 
     async def init_acceptors(self):
         self.acceptor_queues = {
@@ -75,10 +72,6 @@ class Module:
                 coro=acceptor["function"](**self.settings.config, queue=self.acceptor_queues[acceptor["name"]]),
                 loop=asyncio.get_running_loop()
             )
-            # await asyncio.create_task(
-            #     coro=acceptor["function"](**self.settings.config, queue=self.acceptor_queues[acceptor["name"]]),
-            #     name=acceptor["name"]
-            # )
 
     def get_intents(self):
         return self.module.intents
@@ -148,8 +141,6 @@ class ModuleManager:
                 self.senders_queues.update(module.get_senders_queues())
 
         logger.debug("очереди созданы")
-
-
 
     def get_senders_queues(self):
         return self.senders_queues

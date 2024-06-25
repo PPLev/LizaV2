@@ -5,6 +5,7 @@ from event import EventTypes, Event
 from module_manager import ModuleManager
 from nlu import NLU
 import logging
+
 logging.basicConfig(
     encoding="utf-8",
     format="%(asctime)s %(levelname)s %(message)s",
@@ -48,7 +49,6 @@ class Core:
         command_str = event.value
         logger.debug(f"command: {command_str}")
         #intent = self.nlu.classify_text(text=command_str)
-
 
     async def run(self):
         await self.MM.run_queues()
