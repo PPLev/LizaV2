@@ -4,28 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "5be25278733ffcef",
+        "id": "4d318012796ad8c4",
         "type": "tabs",
         "children": [
           {
-            "id": "be722ba5dbb1d487",
+            "id": "cbb8ed9f3a5eb217",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "Ивенты.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "6105e8db6522cca3",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Интенты.md",
                 "mode": "source",
                 "source": false
               }
@@ -158,13 +146,17 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "be722ba5dbb1d487",
+  "active": "cbb8ed9f3a5eb217",
   "lastOpenFiles": [
-    "АПИ Ивенов.md",
+    "АПИ Ивентов.md",
     "Ивенты.md",
     "Интенты.md",
+    "Главная.md",
+    "[]([[АПИ.md",
+    "[[АПИ.md",
+    "АПИ ff.md",
+    "[[Интенты]].md",
     "Типы.md",
-    "Модули",
-    "Главная.md"
+    "Модули"
   ]
 }
