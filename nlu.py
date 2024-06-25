@@ -35,6 +35,9 @@ class NLU:
         if new_intents is not None:
             self.intents.update(new_intents)
 
+        if not self.intents:
+            return
+
         for intent, texts in self.intents.items():
             for text in texts:
                 self.example_vectors.append(self.embed_bert_cls(text))

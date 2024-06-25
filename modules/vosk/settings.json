@@ -1,9 +1,6 @@
 {
   "version": "0.1",
   "is_active": true,
-  "types": [
-    "sender"
-  ],
   "config": {
     "model_dir_path": "modules/vosk/model",
     "input_device_id": -1

@@ -18,9 +18,14 @@ class Core:
         with open(self.connection_config_path, "r", encoding="utf-8") as file:
             self.connection_data = json.load(file)
 
-    async def run(self):
+    def init(self):
         self.MM.init_modules()
+        self.nlu = NLU(
+            intents={intent["name"]: intent["examples"] for intent in self.MM.intents}
+        )
 
+    async def run(self):
+        await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
 
