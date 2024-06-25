@@ -75,3 +75,4 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue
                         value=voice_input_str
                     )
                 )
+                logger.info(f"Vosk - передано в очередь: '{voice_input_str}'")
