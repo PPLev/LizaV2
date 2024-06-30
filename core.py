@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+from connection import Connection
 from event import EventTypes, Event
 from module_manager import ModuleManager
 from nlu import NLU
@@ -16,14 +17,13 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="modules/conections.json"):
-        self.connection_data = None
-        self.connection_config_path = connection_config_path
+    def __init__(self, connection_config_path="modules/connections.json"):
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        with open(self.connection_config_path, "r", encoding="utf-8") as file:
-            self.connection_data = json.load(file)
+        with open(connection_config_path, "r", encoding="utf-8") as file:
+            connection_data = json.load(file)
+            self.connection_data = [Connection(**i) for i in connection_data["rules"]]
 
     def init(self):
         self.MM.init_modules()
@@ -35,15 +35,6 @@ class Core:
         await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
-
-    async def main_event_work(self, event: Event):
-        if event.event_type == EventTypes.user_command:
-            await asyncio.create_task(
-                coro=self.run_command(event=event)
-            )
-
-        if event.event_type == EventTypes.text:
-            pass
 
     async def run_command(self, event: Event):
         command_str = event.value
@@ -60,12 +51,18 @@ class Core:
                     continue
 
                 event = await queue.get()
-                await asyncio.create_task(self.main_event_work(event=event))
 
-            for name, queue in self.MM.get_acceptor_queues().items():
-                queue: asyncio.Queue
-                if queue.empty():
-                    continue
+                if event.event_type == EventTypes.user_command:
+                    await asyncio.create_task(
+                        coro=self.run_command(event=event)
+                    )
 
-                event = await queue.get()
-                await asyncio.create_task(self.main_event_work(event=event))
+                if event.event_type == EventTypes.text:
+                    connections = filter(lambda x: x.sender == name, self.connection_data)
+                    for connection in connections:
+                        #if not hasattr(event, "purpose"):
+                        exec_purpose = bool(len(connection.allowed_purposes))
+                        allow_purpose = bool(event.purpose in connection.allowed_purposes)
+
+                        if exec_purpose or allow_purpose:
+                            await self.MM.acceptor_queues[connection.acceptor].put(event)

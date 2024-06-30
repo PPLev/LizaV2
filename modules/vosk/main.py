@@ -1,6 +1,11 @@
-from .recognizer import run_vosk
+from .recognizer import run_vosk, file_acceptor
 
-acceptors = []
+acceptors = [
+    {
+        "name": "vosk_acceptor",
+        "function": file_acceptor
+    }
+]
 
 senders = [
     {

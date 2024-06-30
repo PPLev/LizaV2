@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "sender": "telegram_bot_sender",
+      "allowed_purposes": ["recognize_file"],
+      "acceptor": "vosk_acceptor"
+    }
+  ]
+}

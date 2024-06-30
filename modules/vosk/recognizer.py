@@ -2,9 +2,9 @@ import asyncio
 import json
 import os
 import sys
+import wave
 
-# import soundfile
-# import sounddevice
+import soundfile
 import vosk
 import pyaudio
 import logging
@@ -12,35 +12,43 @@ from event import EventTypes, Event
 
 logger = logging.getLogger("root")
 
+vosk_model = None
 
-# def recognize_file(file):
-#     data, samplerate = soundfile.read(file)
-#     soundfile.write(file, data, samplerate)
-#
-#     wf = wave.open(file, "rb")
-#
-#     if vosk_model is None:
-#         load_model()
-#     rec = vosk.KaldiRecognizer(vosk_model, 44100)
-#     rec.SetWords(True)
-#     rec.SetPartialWords(True)
-#
-#     while True:
-#         data = wf.readframes(4000)
-#         if len(data) == 0:
-#             break
-#         rec.AcceptWaveform(data)
-#
-#     if "text" in (recognized := json.loads(rec.FinalResult())):
-#         return recognized["text"]
-#     return "Не распознано("
+def file_recognizer(file):
+    global vosk_model
+    data, samplerate = soundfile.read(file)
+    soundfile.write(file, data, samplerate)
+
+    wf = wave.open(file, "rb")
+
+    rec = vosk.KaldiRecognizer(vosk_model, 44100)
+    rec.SetWords(True)
+    rec.SetPartialWords(True)
+
+    while True:
+        data = wf.readframes(4000)
+        if len(data) == 0:
+            break
+        rec.AcceptWaveform(data)
+
+    if "text" in (recognized := json.loads(rec.FinalResult())):
+        return recognized["text"]
+    return "Не распознано("
+
+async def file_acceptor(model_dir_path: str, queue: asyncio.Queue = None, **kwargs):
+    global vosk_model
+    if vosk_model is None:
+        vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
+    while True:
+        await asyncio.sleep(0)
+        if not queue.empty():
+            event = await queue.get()
+            text = file_recognizer(file=event.value)
+            await event.hook(text)
 
 
 async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue = None, **kwargs):
-    """
-    Распознование библиотекой воск
-    """
-
+    global vosk_model
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,
                      channels=1,
@@ -54,7 +62,8 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue
                        "Please download a model for your language from https://alphacephei.com/vosk/models")
         sys.exit(0)
 
-    vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
+    if vosk_model is None:
+        vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
     rec = vosk.KaldiRecognizer(vosk_model, 44100)
 
     logger.info("Запуск распознователя речи vosk вход в цикл")
