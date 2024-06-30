@@ -14,6 +14,7 @@ logger = logging.getLogger("root")
 
 vosk_model = None
 
+
 def file_recognizer(file):
     global vosk_model
     data, samplerate = soundfile.read(file)
@@ -34,6 +35,7 @@ def file_recognizer(file):
     if "text" in (recognized := json.loads(rec.FinalResult())):
         return recognized["text"]
     return "Не распознано("
+
 
 async def file_acceptor(model_dir_path: str, queue: asyncio.Queue = None, **kwargs):
     global vosk_model
