@@ -28,7 +28,7 @@ class Core:
     def init(self):
         self.MM.init_modules()
         self.nlu = NLU(
-            intents={intent["name"]: intent["examples"] for intent in self.MM.intents}
+            intents={name: intent["examples"] for name, intent in self.MM.intents.items()}
         )
 
     async def run(self):
@@ -39,7 +39,15 @@ class Core:
     async def run_command(self, event: Event):
         command_str = event.value
         logger.debug(f"command: {command_str}")
-        #intent = self.nlu.classify_text(text=command_str)
+        intent = self.nlu.classify_text(text=command_str)
+        logger.debug(f"intent: {intent}")
+        intent_name = intent[0][0]
+        intent_function = self.MM.intents[intent_name]["function"]
+        asyncio.run_coroutine_threadsafe(
+            coro=intent_function(event),
+            loop=asyncio.get_running_loop()
+        )
+        logger.debug(f"command: {command_str} start")
 
     async def run(self):
         await self.MM.run_queues()

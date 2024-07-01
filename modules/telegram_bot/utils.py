@@ -47,7 +47,13 @@ async def voice_handler(msg: types.Message, bot: Bot, *args, **kwargs):
         await bot.download_file(file_path, "last_voice.wav")
 
         async def after_recognize(text):
-            await msg.reply(f"Услышала: {text}")
+            await bot.send_queue.put(
+                Event(
+                    event_type=EventTypes.user_command,
+                    value=text
+                )
+            )
+            logger.debug("TG Bot: войс распознан и отправлен в очередь")
 
         await bot.send_queue.put(
             Event(

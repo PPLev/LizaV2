@@ -102,7 +102,7 @@ class ModuleManager:
     def __init__(self):
         self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}")]
         self.modules: Dict[str, Module] = {}
-        self.intents = []
+        self.intents = {}
         self.senders_queues: Dict[str, asyncio.Queue] = {}
         self.acceptor_queues: Dict[str, asyncio.Queue] = {}
 
@@ -121,7 +121,8 @@ class ModuleManager:
                 continue
 
             if hasattr(self.modules[module_name].module, "intents"):
-                self.intents.extend(self.modules[module_name].get_intents())
+                for intent in self.modules[module_name].get_intents():
+                    self.intents[intent["name"]] = intent
 
             logger.debug(f"модуль {module_name} инициализирован")
 
