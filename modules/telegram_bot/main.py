@@ -1,5 +1,11 @@
-from .utils import run_client
-acceptors = []
+from .utils import run_client, msg_sender
+
+acceptors = [
+    {
+        "name": "telegram_bot_acceptor",
+        "function": msg_sender
+    }
+]
 
 senders = [
     {

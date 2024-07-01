@@ -19,7 +19,7 @@ dp: Dispatcher = None
 
 @router.message(F.text == "/start")
 async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
-    if msg.from_user.id in bot.admin_ids:
+    if msg.from_user.id == bot.admin_id:
         await msg.reply("Я тут)")
     else:
         await msg.reply(
@@ -29,7 +29,7 @@ async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
 
 @router.message(F.text)
 async def msg_handler(msg: types.Message, bot: Bot, *args, **kwargs):
-    if msg.from_user.id in bot.admin_ids:
+    if msg.from_user.id == bot.admin_id:
         answer = core.run_str(msg.text, is_name_find=True, return_answer=True)
         await msg.reply(answer)
     else:
@@ -40,7 +40,7 @@ async def msg_handler(msg: types.Message, bot: Bot, *args, **kwargs):
 
 @router.message(F.voice)
 async def voice_handler(msg: types.Message, bot: Bot, *args, **kwargs):
-    if msg.from_user.id in bot.admin_ids:
+    if msg.from_user.id == bot.admin_id:
         file_id = msg.voice.file_id
         file = await bot.get_file(file_id)
         file_path = file.file_path
@@ -68,12 +68,24 @@ async def voice_handler(msg: types.Message, bot: Bot, *args, **kwargs):
         )
 
 
-async def run_client(env_path: str, admin_ids: list, guest_text, queue: asyncio.Queue):
+async def msg_sender(queue: asyncio.Queue = None, **kwargs):
+    global bot
+    while True:
+        await asyncio.sleep(0)
+        if not queue.empty():
+            event = await queue.get()
+            await bot.send_message(
+                chat_id=bot.admin_ids[0],
+                text=event.value
+            )
+
+
+async def run_client(env_path: str, admin_id: list, guest_text, queue: asyncio.Queue):
     global bot, dp
     token = dotenv.dotenv_values(env_path)["TOKEN"]
     try:
         bot = Bot(token=token)
-        bot.admin_ids = admin_ids
+        bot.admin_id = admin_id
         bot.guest_text = guest_text
         bot.send_queue = queue
         dp = Dispatcher(storage=MemoryStorage())

@@ -10,7 +10,7 @@ class Main(app.App):
     BINDINGS = [
         ("escape", "app.quit", "exit"),
         ("m", "push_screen('ModulesScreen')", "Modules"),
-        ("s", "push_screen('SettingsScreen')", "Settings"),
+        #("s", "push_screen('SettingsScreen')", "Settings"),
     ]
     TITLE = "Liza brain"
 

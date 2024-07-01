@@ -151,5 +151,8 @@ class ModuleManager:
     def get_modules(self):
         pass
 
+    def get_module_names(self):
+        return self.name_list.copy()
+
     def reinit_module(self, name):
         pass
