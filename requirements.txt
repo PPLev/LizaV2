@@ -7,3 +7,4 @@ PyAudio==0.2.14
 aiogram==3.8.0
 python-dotenv==1.0.1
 soundfile==0.12.1
+sounddevice==0.4.7

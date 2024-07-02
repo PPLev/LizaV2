@@ -1,0 +1,10 @@
+{
+  "version": "0.1",
+  "is_active": true,
+  "config": {
+    "model_name": "v4_ru.pt",
+    "model_path": "modules/silero/model/",
+    "model_url": "https://models.silero.ai/models/tts/ru/v4_ru.pt",
+    "output_device_id": null
+  }
+}
