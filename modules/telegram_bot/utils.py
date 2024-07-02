@@ -86,7 +86,7 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
             )
 
 
-async def run_client(env_path: str, admin_id: list, guest_text, queue: asyncio.Queue):
+async def run_client(env_path: str, admin_id: int, guest_text, queue: asyncio.Queue):
     global bot, dp
     token = dotenv.dotenv_values(env_path)["TOKEN"]
     try:
