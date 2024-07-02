@@ -81,12 +81,12 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
         if not queue.empty():
             event = await queue.get()
             await bot.send_message(
-                chat_id=bot.admin_ids[0],
+                chat_id=bot.admin_id,
                 text=event.value
             )
 
 
-async def run_client(env_path: str, admin_id: list, guest_text, queue: asyncio.Queue):
+async def run_client(env_path: str, admin_id: int, guest_text, queue: asyncio.Queue):
     global bot, dp
     token = dotenv.dotenv_values(env_path)["TOKEN"]
     try:
@@ -101,6 +101,19 @@ async def run_client(env_path: str, admin_id: list, guest_text, queue: asyncio.Q
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+
+
+async def bot_test(event: Event = None, queue: asyncio.Queue = None,  **kwargs):
+    global bot
+    while True:
+        await asyncio.sleep(0)
+        if not queue.empty():
+            event = await queue.get()
+            logger.info(f"bot_test: '{event.value}'")
+            await bot.send_message(
+                chat_id=bot.admin_ids,
+                text=event.value
+            )
 
 
 async def stop_client():

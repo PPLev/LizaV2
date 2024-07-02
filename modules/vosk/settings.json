@@ -2,7 +2,7 @@
   "version": "0.1",
   "is_active": true,
   "config": {
-    "model_dir_path": "modules/vosk/model",
+    "model_dir_path": "modules/vosk/model/vosk-model-small-ru-0.22",
     "input_device_id": -1
   }
 }

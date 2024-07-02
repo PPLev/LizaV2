@@ -86,4 +86,18 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue
                         value=voice_input_str
                     )
                 )
+                # await queue.put(
+                #     Event(
+                #         event_type=EventTypes.text,
+                #         value=voice_input_str,
+                #         purpose="telegram"
+                #     )
+                # )
+                # await queue.put(
+                #     Event(
+                #         event_type=EventTypes.text,
+                #         value=voice_input_str,
+                #         purpose="silero"
+                #     )
+                # )
                 logger.info(f"Vosk - передано в очередь: '{voice_input_str}'")

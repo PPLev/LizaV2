@@ -4,6 +4,21 @@
       "sender": "telegram_bot_sender",
       "allowed_purposes": ["recognize_file"],
       "acceptor": "vosk_acceptor"
+    },
+    {
+      "sender": "vosk_send",
+      "allowed_purposes": ["telegram"],
+      "acceptor": "telegram_bot_acceptor"
+    },
+    {
+      "sender": "vosk_send",
+      "allowed_purposes": ["silero"],
+      "acceptor": "silero_say_acceptor"
+    },
+    {
+      "sender": "test_send",
+      "allowed_purposes": ["text_time"],
+      "acceptor": "silero_say_acceptor"
     }
   ]
 }

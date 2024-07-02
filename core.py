@@ -31,23 +31,21 @@ class Core:
             intents={name: intent["examples"] for name, intent in self.MM.intents.items()}
         )
 
-    async def run(self):
-        await self.MM.run_queues()
-        while True:
-            await asyncio.sleep(0)
-
     async def run_command(self, event: Event):
         command_str = event.value
         logger.debug(f"command: {command_str}")
         intent = self.nlu.classify_text(text=command_str)
         logger.debug(f"intent: {intent}")
         intent_name = intent[0][0]
-        intent_function = self.MM.intents[intent_name]["function"]
-        asyncio.run_coroutine_threadsafe(
-            coro=intent_function(event),
-            loop=asyncio.get_running_loop()
-        )
-        logger.debug(f"command: {command_str} start")
+        intent_procent_acees = intent[0][1]
+        if intent_procent_acees > 0.9:
+            intent_function = self.MM.intents[intent_name]["function"]
+            asyncio.run_coroutine_threadsafe(
+                coro=intent_function(event),
+                loop=asyncio.get_running_loop()
+            )
+            logger.debug(f"command: {command_str} start")
+
 
     async def run(self):
         await self.MM.run_queues()
@@ -68,9 +66,11 @@ class Core:
                 if event.event_type == EventTypes.text:
                     connections = filter(lambda x: x.sender == name, self.connection_data)
                     for connection in connections:
-                        #if not hasattr(event, "purpose"):
+                        if not hasattr(event, "purpose"):
+                            pass
+
                         exec_purpose = bool(len(connection.allowed_purposes))
                         allow_purpose = bool(event.purpose in connection.allowed_purposes)
 
-                        if exec_purpose or allow_purpose:
+                        if exec_purpose and allow_purpose:
                             await self.MM.acceptor_queues[connection.acceptor].put(event)
