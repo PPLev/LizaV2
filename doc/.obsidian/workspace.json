@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "4d318012796ad8c4",
+        "id": "6d2e08eb1baadcfc",
         "type": "tabs",
         "children": [
           {
-            "id": "cbb8ed9f3a5eb217",
+            "id": "964243d06d2e2b28",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -146,12 +146,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "cbb8ed9f3a5eb217",
+  "active": "964243d06d2e2b28",
   "lastOpenFiles": [
+    "[[Перенаправление.md",
     "Ивенты.md",
-    "АПИ Ивентов.md",
-    "Интенты.md",
     "Главная.md",
+    "Интенты.md",
+    "АПИ Ивентов.md",
     "[]([[АПИ.md",
     "[[АПИ.md",
     "АПИ ff.md",

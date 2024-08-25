@@ -3,6 +3,7 @@
   "is_active": true,
   "config": {
     "model_dir_path": "modules/vosk/model",
-    "input_device_id": -1
+    "input_device_id": -1,
+    "send_text_event": false
   }
 }
