@@ -13,6 +13,7 @@ class SubModule:
     acceptors: List[dict]
     senders: List[dict]
     intents: list[dict]
+    extensions: List[dict]
 
 
 @dataclass
@@ -79,6 +80,9 @@ class Module:
     def get_settings(self):
         return self.settings
 
+    def get_extensions(self):
+        return self.module.extensions
+
     def get_senders_queues(self):
         return self.senders_queues
 
@@ -103,6 +107,7 @@ class ModuleManager:
         self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}")]
         self.modules: Dict[str, Module] = {}
         self.intents = {}
+        self.extensions = {}
         self.senders_queues: Dict[str, asyncio.Queue] = {}
         self.acceptor_queues: Dict[str, asyncio.Queue] = {}
 
@@ -124,6 +129,11 @@ class ModuleManager:
                 for intent in self.modules[module_name].get_intents():
                     self.intents[intent["name"]] = intent
 
+            if hasattr(self.modules[module_name].module, "extensions"):
+                for extension in self.modules[module_name].get_extensions():
+                    self.extensions[extension["name"]] = extension["function"]
+
+
             logger.debug(f"модуль {module_name} инициализирован")
 
         logger.debug("модули инициализированы")
@@ -142,6 +152,9 @@ class ModuleManager:
                 self.senders_queues.update(module.get_senders_queues())
 
         logger.debug("очереди созданы")
+
+    def get_extension(self, name):
+        return self.extensions[name]
 
     def get_senders_queues(self):
         return self.senders_queues

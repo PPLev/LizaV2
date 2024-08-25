@@ -24,3 +24,13 @@ class Event:
             **data
         )
         return event
+
+    def copy(self):
+        return Event.from_dict(self.__dict__.copy())
+
+
+if __name__ == '__main__':
+    event = Event.from_dict({"event_type": "user_command", "value": 1})
+    print(event)
+    event2 = event.copy()
+    print(event2)

@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import List
 
 from connection import Connection
 from event import EventTypes, Event
@@ -21,9 +22,7 @@ class Core:
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        with open(connection_config_path, "r", encoding="utf-8") as file:
-            connection_data = json.load(file)
-            self.connection_data = [Connection(**i) for i in connection_data["rules"]]
+        self.connection_rules = Connection.load("connections/connections.yml")
 
     def init(self):
         self.MM.init_modules()
@@ -32,6 +31,9 @@ class Core:
         )
 
     async def run_command(self, event: Event):
+        if len(self.MM.intents) == 0:
+            return
+
         command_str = event.value
         logger.debug(f"command: {command_str}")
         intent = self.nlu.classify_text(text=command_str)
@@ -61,18 +63,10 @@ class Core:
                     )
 
                 if event.event_type == EventTypes.text:
-                    connections = filter(lambda x: x.sender == name, self.connection_data)
+                    connections: List[Connection] = filter(lambda x: name in x.senders, self.connection_rules)
                     for connection in connections:
-                        event_connection_allowed = False
-                        is_event_purposed = hasattr(event, "purpose")
-                        exec_purpose = bool(len(connection.allowed_purposes))
-
-                        if exec_purpose and is_event_purposed:
-                            if event.purpose in connection.allowed_purposes:
-                                event_connection_allowed = True
-
-                        else:
-                            event_connection_allowed = True
+                        event_connection_allowed = connection.check_event(event=event)
 
                         if event_connection_allowed:
-                            await self.MM.acceptor_queues[connection.acceptor].put(event)
+                            for acceptor in connection.acceptors:
+                                await self.MM.acceptor_queues[acceptor].put(event.copy())

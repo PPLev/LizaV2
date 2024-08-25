@@ -49,7 +49,7 @@ async def file_acceptor(model_dir_path: str, queue: asyncio.Queue = None, **kwar
             await event.hook(text)
 
 
-async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue = None, **kwargs):
+async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=False, queue: asyncio.Queue = None, **kwargs):
     global vosk_model
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,
@@ -86,4 +86,12 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, queue: asyncio.Queue
                         value=voice_input_str
                     )
                 )
+                if send_text_event:
+                    await queue.put(
+                        Event(
+                            event_type=EventTypes.text,
+                            value=voice_input_str
+                        )
+                    )
+
                 logger.info(f"Vosk - передано в очередь: '{voice_input_str}'")

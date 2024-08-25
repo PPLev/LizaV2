@@ -1,0 +1,9 @@
+ver: "1.0"
+includes: []
+rules:
+  rule_1:
+    senders: [vosk_send]
+    before_ext: []
+    purposes: []
+    post_ext: []
+    acceptors: [silero_say_acceptor]
