@@ -1,4 +1,4 @@
-from .recognizer import run_vosk, file_acceptor
+from .recognizer import run_vosk, file_acceptor, recognize_file_vosk
 
 acceptors = [
     {
@@ -15,3 +15,10 @@ senders = [
 ]
 
 intents = []
+
+extensions = [
+    {
+        "name": "recognize_file_vosk",
+        "function": recognize_file_vosk
+    }
+]

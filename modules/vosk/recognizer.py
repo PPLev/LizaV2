@@ -37,6 +37,13 @@ def file_recognizer(file):
     return "Не распознано("
 
 
+async def recognize_file_vosk(event: Event):
+    file_name = event.value
+    text = file_recognizer(file=file_name)
+    event.value = text
+    return event
+
+
 async def file_acceptor(model_dir_path: str, queue: asyncio.Queue = None, **kwargs):
     global vosk_model
     if vosk_model is None:

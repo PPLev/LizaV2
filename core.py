@@ -1,5 +1,4 @@
 import asyncio
-import json
 from typing import List
 
 from connection import Connection
@@ -22,13 +21,18 @@ class Core:
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load("connections/connections.yml")
+        self.connection_rules = Connection.load()
 
     def init(self):
         self.MM.init_modules()
+        self._init_ext()
         self.nlu = NLU(
             intents={name: intent["examples"] for name, intent in self.MM.intents.items()}
         )
+
+    def _init_ext(self):
+        for connection in self.connection_rules:
+            connection.init_extensions(self.MM)
 
     async def run_command(self, event: Event):
         if len(self.MM.intents) == 0:
@@ -65,8 +69,6 @@ class Core:
                 if event.event_type == EventTypes.text:
                     connections: List[Connection] = filter(lambda x: name in x.senders, self.connection_rules)
                     for connection in connections:
-                        event_connection_allowed = connection.check_event(event=event)
-
-                        if event_connection_allowed:
-                            for acceptor in connection.acceptors:
-                                await self.MM.acceptor_queues[acceptor].put(event.copy())
+                        asyncio.run_coroutine_threadsafe(
+                            coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
+                        )

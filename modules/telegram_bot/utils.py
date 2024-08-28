@@ -59,7 +59,7 @@ async def voice_handler(msg: types.Message, bot: Bot, *args, **kwargs):
             Event(
                 event_type=EventTypes.text,
                 value="last_voice.wav",
-                purpose="recognize_file",
+                purpose="voice",
                 hook=after_recognize
             )
         )
