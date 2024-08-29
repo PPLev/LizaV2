@@ -26,16 +26,18 @@ class Core:
     def init(self):
         self.MM.init_modules()
         self._init_ext()
-        self.nlu = NLU(
-            intents={name: intent["examples"] for name, intent in self.MM.intents.items()}
-        )
+        if len(self.MM.intents) > 2:
+            intents = {name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.nlu = NLU(
+                intents=intents
+            )
 
     def _init_ext(self):
         for connection in self.connection_rules:
             connection.init_extensions(self.MM)
 
     async def run_command(self, event: Event):
-        if len(self.MM.intents) == 0:
+        if not self.nlu:
             return
 
         command_str = event.value
