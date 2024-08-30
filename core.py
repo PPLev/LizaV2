@@ -46,7 +46,6 @@ class Core:
             )
             logger.debug(f"command: {command_str} start")
 
-
     async def run(self):
         await self.MM.run_queues()
         while True:
@@ -66,11 +65,16 @@ class Core:
                 if event.event_type == EventTypes.text:
                     connections = filter(lambda x: x.sender == name, self.connection_data)
                     for connection in connections:
-                        if not hasattr(event, "purpose"):
-                            pass
-
+                        event_connection_allowed = False
+                        is_event_purposed = hasattr(event, "purpose")
                         exec_purpose = bool(len(connection.allowed_purposes))
-                        allow_purpose = bool(event.purpose in connection.allowed_purposes)
 
-                        if exec_purpose and allow_purpose:
+                        if exec_purpose and is_event_purposed:
+                            if event.purpose in connection.allowed_purposes:
+                                event_connection_allowed = True
+
+                        else:
+                            event_connection_allowed = True
+
+                        if event_connection_allowed:
                             await self.MM.acceptor_queues[connection.acceptor].put(event)

@@ -34,6 +34,7 @@ async def say_silero(model_path: str,
             model_url, model_path + model_name
         )
 
+    logger.debug("Загрузка модели силеро")
     silero_model = torch.package.PackageImporter(
         model_path + model_name
     ).load_pickle("tts_models", "model")
@@ -61,6 +62,7 @@ async def say_silero(model_path: str,
 
             # sound_playing = True
             # logger.info(f"Статус записи: {sound_playing}")
+            logger.info(f"Начата озвучка для '{say_str}'")
             sounddevice.play(audio, samplerate=24000)
             sounddevice.wait()
             # sound_playing = False
@@ -96,3 +98,4 @@ async def say_silero(model_path: str,
 # async def mute(package):
 #     global is_mute
 #     is_mute = not is_mute
+            logger.info(f"Озвучка завершена для '{say_str}'")
