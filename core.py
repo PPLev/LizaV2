@@ -1,4 +1,5 @@
 import asyncio
+import os.path
 from typing import List
 
 from connection import Connection
@@ -21,7 +22,11 @@ class Core:
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load()
+        self.connection_rules = Connection.load_file("connections/connections.yml")
+
+        for module in self.MM.list_modules():
+            if os.path.isfile(module_conn := f"{module}/connections.yml"):
+                self.connection_rules.extend(Connection.load_file(module_conn))
 
     def init(self):
         self.MM.init_modules()
