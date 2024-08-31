@@ -1,7 +1,4 @@
-import os
-import sys
 import logging
-from event import Event
 from .utils import num_to_word, change_type
 
 
