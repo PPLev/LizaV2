@@ -29,7 +29,7 @@ class Settings:
             version=data["version"],
             is_active=data["is_active"],
             config=data["config"],
-            require_modules=data["require_modules"],
+            require_modules=data["require_modules"] if "require_modules" in data else [],
         )
         return settings
 
