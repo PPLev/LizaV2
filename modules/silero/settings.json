@@ -1,6 +1,7 @@
 {
   "version": "0.1",
   "is_active": true,
+  "require_modules": [],
   "config": {
     "model_name": "v4_ru.pt",
     "model_path": "modules/silero/model/",

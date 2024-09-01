@@ -9,3 +9,4 @@ python-dotenv==1.0.1
 soundfile==0.12.1
 sounddevice==0.4.7
 PyYAML==6.0.1
+num2words==0.5.13

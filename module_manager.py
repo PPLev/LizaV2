@@ -21,6 +21,7 @@ class Settings:
     version: str
     is_active: bool
     config: dict
+    require_modules: list
 
     @staticmethod
     def from_dict(data):
@@ -28,6 +29,7 @@ class Settings:
             version=data["version"],
             is_active=data["is_active"],
             config=data["config"],
+            require_modules=data["require_modules"],
         )
         return settings
 
@@ -120,10 +122,17 @@ class ModuleManager:
                 logger.debug(f"модуль {module_name} НЕ инициализирован")
                 continue
 
-            self.modules[module_name] = module
-
-            if not self.modules[module_name].settings.is_active:
+            if not module.settings.is_active:
                 continue
+
+            if module.settings.require_modules:
+                for require_module in module.settings.require_modules:
+                    if require_module not in self.name_list:  # TODO: сделать нормальную проверку
+                        module.settings.is_active = False
+                        logger.error(f"Required module '{require_module}' for module {module_name} not found")
+                        continue
+
+            self.modules[module_name] = module
 
             if hasattr(self.modules[module_name].module, "intents"):
                 for intent in self.modules[module_name].get_intents():
@@ -132,7 +141,6 @@ class ModuleManager:
             if hasattr(self.modules[module_name].module, "extensions"):
                 for extension in self.modules[module_name].get_extensions():
                     self.extensions[extension["name"]] = extension["function"]
-
 
             logger.debug(f"модуль {module_name} инициализирован")
 
@@ -162,8 +170,8 @@ class ModuleManager:
     def get_acceptor_queues(self):
         return self.acceptor_queues
 
-    def get_modules(self):
-        pass
+    def list_modules(self) -> List[str]:
+        return list(self.modules.keys())
 
     def get_module_names(self):
         return self.name_list.copy()

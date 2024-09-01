@@ -1,4 +1,5 @@
 import asyncio
+import os.path
 from typing import List
 
 from connection import Connection
@@ -21,21 +22,27 @@ class Core:
         self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load()
+        self.connection_rules = Connection.load_file("connections/connections.yml")
+
+        for module in self.MM.list_modules():
+            if os.path.isfile(module_conn := f"{module}/connections.yml"):
+                self.connection_rules.extend(Connection.load_file(module_conn))
 
     def init(self):
         self.MM.init_modules()
         self._init_ext()
-        self.nlu = NLU(
-            intents={name: intent["examples"] for name, intent in self.MM.intents.items()}
-        )
+        if len(self.MM.intents) > 2:
+            intents = {name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.nlu = NLU(
+                intents=intents
+            )
 
     def _init_ext(self):
         for connection in self.connection_rules:
             connection.init_extensions(self.MM)
 
     async def run_command(self, event: Event):
-        if len(self.MM.intents) == 0:
+        if not self.nlu:
             return
 
         command_str = event.value

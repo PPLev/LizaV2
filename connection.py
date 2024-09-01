@@ -1,6 +1,5 @@
 import asyncio
 import os.path
-from dataclasses import dataclass
 from typing import List
 import yaml
 
@@ -37,7 +36,7 @@ class Connection:
         self.acceptors = acceptors
 
     @staticmethod
-    def load(filename: str = "connections/connections.yml") -> List['Connection']:
+    def load_file(filename: str) -> List['Connection']:
         if not os.path.isfile(filename):
             return []
 
@@ -55,7 +54,7 @@ class Connection:
             )
 
         for addition in data["includes"]:
-            connections.extend(Connection.load(addition))
+            connections.extend(Connection.load_file(addition))
 
         return connections
 
@@ -95,4 +94,4 @@ class Connection:
 
 
 if __name__ == '__main__':
-    connections = Connection.load('connections/connections.yml')
+    connections = Connection.load_file('connections/connections.yml')
