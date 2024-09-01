@@ -74,7 +74,7 @@ class Core:
                     )
 
                 if event.event_type == EventTypes.text:
-                    connections: List[Connection] = filter(lambda x: name in x.senders, self.connection_rules)
+                    connections = filter(lambda x: name in x.senders or len(x.senders) == 0, self.connection_rules)
                     for connection in connections:
                         asyncio.run_coroutine_threadsafe(
                             coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
