@@ -16,3 +16,10 @@ def num_to_word(event: Event):
 def change_type(event: Event, new_type: str = EventTypes.text):
     event.type = new_type
     return event
+
+
+def change_purpose(event: Event, new_purpose: str = "none"):
+    event.purpose = new_purpose
+    return event
+
+# def move_queue(event: Event):

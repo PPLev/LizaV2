@@ -30,8 +30,14 @@ async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
 @router.message(F.text)
 async def msg_handler(msg: types.Message, bot: Bot, *args, **kwargs):
     if msg.from_user.id == bot.admin_id:
-        answer = core.run_str(msg.text, is_name_find=True, return_answer=True)
-        await msg.reply(answer)
+        await bot.send_queue.put(
+            Event(
+                event_type=EventTypes.text,
+                value=msg.text,
+                purpose="tg_msg"
+            )
+        )
+        # await msg.reply(answer)
     else:
         await msg.reply(
             text=bot.guest_text
@@ -46,21 +52,11 @@ async def voice_handler(msg: types.Message, bot: Bot, *args, **kwargs):
         file_path = file.file_path
         await bot.download_file(file_path, "last_voice.wav")
 
-        async def after_recognize(text):
-            await bot.send_queue.put(
-                Event(
-                    event_type=EventTypes.user_command,
-                    value=text
-                )
-            )
-            logger.debug("TG Bot: войс распознан и отправлен в очередь")
-
         await bot.send_queue.put(
             Event(
                 event_type=EventTypes.text,
                 value="last_voice.wav",
                 purpose="voice",
-                hook=after_recognize
             )
         )
         logger.debug("TG Bot: войс отправлен в очередь")
@@ -81,7 +77,7 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
         if not queue.empty():
             event = await queue.get()
             await bot.send_message(
-                chat_id=bot.admin_ids[0],
+                chat_id=bot.admin_id,
                 text=event.value
             )
 
