@@ -4,6 +4,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import List, Dict
+import shutil
 
 logger = logging.getLogger("root")
 
@@ -40,8 +41,14 @@ class Module:
         self.senders_queues = None
         self.name = name
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
-            print(f"modules/{self.name}/settings.json not found, module {self.name} not init")
-            return
+            if os.path.isfile(f"modules/{self.name}/example.settings.json"):
+                shutil.copyfile(
+                    src=f"modules/{self.name}/example.settings.json",
+                    dst=f"modules/{self.name}/settings.json"
+                )
+            else:
+                print(f"modules/{self.name}/settings.json not found, module {self.name} not init")
+                return
 
         with open(f"modules/{self.name}/settings.json", "r", encoding="utf-8") as file:
             self.settings: Settings = Settings.from_dict(json.load(file))

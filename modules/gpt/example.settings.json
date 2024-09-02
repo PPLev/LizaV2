@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "is_active": true,
+  "is_active": false,
   "require_modules": [],
   "config": {
     "openai_base": "",
