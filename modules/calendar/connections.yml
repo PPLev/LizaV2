@@ -3,7 +3,7 @@ includes: []
 rules:
   calendar_1:
     senders: []
-    before_ext: [[ask_gpt, {prompt: "Сформируй json из следующего запроса: '%value%'.
+    before_ext: [[ask_gpt, {prompt: "Сформируй json из следующего запроса: '{event_value}'.
 Пример: 'Напомни мне послезавтра про то что мне нужно забрать заказ из интернет магазина после работы'
 Ответ: 
 {{
@@ -23,7 +23,6 @@ rules:
     'minute': 45
   }}
 }}
-Для указания даты и времени, учитывай, что сейчас %time% %date%
-", context: [date, time, event_value]}]]
+Для указания даты и времени, учитывай, что сейчас %time% %date%"}]]
     purposes: [add_event]
     acceptors: [calendar_acceptor]
