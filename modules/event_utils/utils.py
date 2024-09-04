@@ -28,8 +28,8 @@ def change_purpose(event: Event, new_purpose: str = "none"):
 def json_find(event: Event):
     text = event.value
     try:
-        json_data_ = "{" + text.split("{")[1]
-        json_data_ = json_data_.split("}")[0] + "}"
+        json_data_ = "{" + "{".join(text.split("{")[1:])
+        json_data_ = "}".join(json_data_.split("}")[:-1]) + "}"
         event.value = json_data_
         return event
     except:
