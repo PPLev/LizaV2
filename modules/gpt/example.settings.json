@@ -5,6 +5,7 @@
   "config": {
     "openai_base": "",
     "token": "",
-    "sys_prompt": ""
+    "sys_prompt": "",
+    "model": ""
   }
 }
