@@ -40,7 +40,7 @@ class Connection:
         if not os.path.isfile(filename):
             return []
 
-        with open(filename, 'r') as file:
+        with open(filename, 'r', encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
         connections = []
