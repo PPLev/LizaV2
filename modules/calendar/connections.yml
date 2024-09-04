@@ -2,7 +2,7 @@ ver: "1.0"
 includes: []
 rules:
   calendar_1:
-    senders: [telegram_bot_sender]
+    senders: []
     before_ext: [[ask_gpt, {prompt: 'Сформируй json из следующего запроса: \"%event_value%\".
 Пример: \"Напомни мне послезавтра про то что мне нужно забрать заказ из интернет магазина после работы\"
 Ответ: 
@@ -24,5 +24,5 @@ rules:
   }
 }
 Для указания даты и времени, учитывай, что сейчас %time% %date%'}], json_find]
-    purposes: [tg_msg]
+    purposes: [add_event]
     acceptors: [calendar_acceptor]
