@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+from dataclasses import dataclass
 from datetime import datetime
 
 import caldav
@@ -10,6 +11,16 @@ from event import Event
 
 client = None
 calendar = None
+
+
+@dataclass
+class CalendarData:
+    url: str
+    login: str
+    password: str
+
+
+calendar_data: CalendarData = None
 
 
 def with_calendar(url=None, login=None, password=None):
@@ -49,20 +60,9 @@ def get_events(calendar: Calendar, event: Event):
     pass
 
 
-def init():
-    url = "https://cloud.example.com/remote.php/dav/calendars/admin/personal/"
-    client = caldav.DAVClient(url=url, username="admin", password=os.environ["CALENDAR_PASSWORD"])
-    calendar = client.calendar(url=url)
-    print(calendar)
-    event = calendar.save_event(
-        dtstart=datetime(2024, 9, 1, 20),
-        dtend=datetime(2024, 9, 1, 21),
-        summary="Do the needful",
-        rrule={},
-    )
-    print(event)
-    # events = calendar.events()
-    # print(events)
+def init(url=None, login=None, password=None):
+    global calendar_data
+    calendar_data = CalendarData(url, login, password)
 
 
 if __name__ == '__main__':

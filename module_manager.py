@@ -169,6 +169,8 @@ class ModuleManager:
             if not module.settings.is_active:
                 continue
 
+            await module.init()
+
             if hasattr(module.module, "acceptors"):
                 await module.init_acceptors()
                 self.acceptor_queues.update(module.get_acceptor_queues())
@@ -189,7 +191,7 @@ class ModuleManager:
         return self.acceptor_queues
 
     def list_modules(self) -> List[str]:
-        return list(self.modules.keys())
+        return self.name_list.copy()
 
     def get_module_names(self):
         return self.name_list.copy()
