@@ -4,6 +4,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import List, Dict
+import shutil
 
 logger = logging.getLogger("root")
 
@@ -33,6 +34,10 @@ class Settings:
         )
         return settings
 
+    @property
+    def as_dict(self):
+        return self.config.copy()
+
 
 class Module:
     def __init__(self, name):
@@ -40,8 +45,14 @@ class Module:
         self.senders_queues = None
         self.name = name
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
-            print(f"modules/{self.name}/settings.json not found, module {self.name} not init")
-            return
+            if os.path.isfile(f"modules/{self.name}/example.settings.json"):
+                shutil.copyfile(
+                    src=f"modules/{self.name}/example.settings.json",
+                    dst=f"modules/{self.name}/settings.json"
+                )
+            else:
+                print(f"modules/{self.name}/settings.json not found, module {self.name} not init")
+                return
 
         with open(f"modules/{self.name}/settings.json", "r", encoding="utf-8") as file:
             self.settings: Settings = Settings.from_dict(json.load(file))
@@ -53,6 +64,13 @@ class Module:
 
         self.intents = {}
         self.version = self.settings.version
+
+    async def init(self):
+        if hasattr(self.module, "init"):
+            if asyncio.iscoroutinefunction(self.module.init):
+                await self.module.init(**self.settings.as_dict)
+            else:
+                self.module.init(**self.settings.as_dict)
 
     async def init_senders(self):
         self.senders_queues = {
@@ -151,6 +169,8 @@ class ModuleManager:
             if not module.settings.is_active:
                 continue
 
+            await module.init()
+
             if hasattr(module.module, "acceptors"):
                 await module.init_acceptors()
                 self.acceptor_queues.update(module.get_acceptor_queues())
@@ -171,7 +191,7 @@ class ModuleManager:
         return self.acceptor_queues
 
     def list_modules(self) -> List[str]:
-        return list(self.modules.keys())
+        return self.name_list.copy()
 
     def get_module_names(self):
         return self.name_list.copy()
