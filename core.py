@@ -25,7 +25,7 @@ class Core:
         self.connection_rules = Connection.load_file("connections/connections.yml")
 
         for module in self.MM.list_modules():
-            if os.path.isfile(module_conn := f"{module}/connections.yml"):
+            if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
                 self.connection_rules.extend(Connection.load_file(module_conn))
 
     def init(self):
@@ -74,7 +74,9 @@ class Core:
                     )
 
                 if event.event_type == EventTypes.text:
-                    connections = filter(lambda x: name in x.senders or len(x.senders) == 0, self.connection_rules)
+                    connections = list(
+                        filter(lambda x: (name in x.senders) or (len(x.senders) == 0), self.connection_rules)
+                    )
                     for connection in connections:
                         asyncio.run_coroutine_threadsafe(
                             coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
