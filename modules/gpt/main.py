@@ -1,4 +1,4 @@
-from .utils import ask_gpt
+from .utils import ask_gpt, init
 
 extensions = [
     {

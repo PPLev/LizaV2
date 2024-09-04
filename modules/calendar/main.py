@@ -1,12 +1,12 @@
-# from .recognizer import run_vosk, file_acceptor, recognize_file_vosk
-#
-# acceptors = [
-#     {
-#         "name": "vosk_acceptor",
-#         "function": file_acceptor
-#     }
-# ]
-#
+from .utils import init, add_event
+
+acceptors = [
+    {
+        "name": "calendar_acceptor",
+        "function": add_event
+    }
+]
+
 # senders = [
 #     {
 #         "name": "vosk_send",
