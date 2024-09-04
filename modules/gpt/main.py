@@ -1,4 +1,4 @@
-
+from .utils import ask_gpt
 
 extensions = [
     {

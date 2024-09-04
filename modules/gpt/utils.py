@@ -1,20 +1,32 @@
+from dataclasses import dataclass
+from datetime import datetime
+from typing import List
+
 import httpx
 import logging
 
-logger = logging.getLogger(__name__)
+from event import Event
 
 
-async def ask_gpt(prompt: str):
-    context_prompt = f"""char is (Lisa)
-    Age 21
-    Female
-    Personality: Feels like a robot, but behaves more humanely. Works as user's assistant and follows all his instructions. Does not like empty talk, but prefers commands or orders.
-    Description: When user asks to do something, char always tries to do it as best as possible and talks about his failures, which are incredibly rare. When char answers, her answers to questions do not contain unnecessary information. Does not express emotion unless user asks for it."""
+#logger = logging.getLogger(__name__)
 
+
+@dataclass
+class GPTConfig:
+    url: str
+    token: str
+    sys_prompt: str
+
+
+gpt_config: GPTConfig = None
+
+
+async def gpt_req(prompt):
+    global gpt_config
     data = {
         "mode": "chat",
         "messages": [
-            # {"role": "system", "content": context_prompt},
+            {"role": "system", "content": gpt_config.sys_prompt},
             {"role": "user", "content": prompt}
         ]
     }
@@ -22,10 +34,32 @@ async def ask_gpt(prompt: str):
     #     data.update({"model": self.model})
 
     headers = {"Content-Type": "application/json"}
-    # if self.token:
-    #     headers.update({"Authorization": f"Bearer {self.token}"})
+    if gpt_config.token:
+        headers.update({"Authorization": f"Bearer {gpt_config.token}"})
 
-    # response = httpx.post(f"{self.base_url}chat/completions", headers=headers, json=data, verify=False)
-    # assistant_message = response.json()['choices'][0]['message']['content']
-    # logger.info(f"Ответ ГПТ: {assistant_message}\n{response.json()}")
-    # return assistant_message
+    async with httpx.AsyncClient() as client:
+        response = await client.post(gpt_config.url, json=data, headers=headers)
+
+    gpt_answer = response.json()['choices'][0]['message']['content']
+    return gpt_answer
+
+
+async def ask_gpt(event: Event, prompt: str = "", context: List[str] = None) -> Event:
+    context_items = {
+        "%date%": lambda: datetime.now().strftime("%B %d, %Y"),
+        "%time%": lambda: datetime.now().strftime("%H:%M:%S"),
+        "%event_value%": lambda: event.value,
+        # TODO: Добавить больше переменных контекста
+    }
+
+    for context_item, getter in context_items:
+        prompt = prompt.replace(context_item, getter())
+
+    event.value = await gpt_req(prompt)
+    return event
+
+
+async def init(url: str, token: str, sys_prompt: str):
+    global gpt_config
+    if gpt_config is None:
+        gpt_config = GPTConfig(url, token, sys_prompt)

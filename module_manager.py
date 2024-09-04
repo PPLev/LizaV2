@@ -34,6 +34,10 @@ class Settings:
         )
         return settings
 
+    @property
+    def as_dict(self):
+        return self.config.copy()
+
 
 class Module:
     def __init__(self, name):
@@ -60,6 +64,13 @@ class Module:
 
         self.intents = {}
         self.version = self.settings.version
+
+    async def init(self):
+        if hasattr(self.module, "init"):
+            if asyncio.iscoroutinefunction(self.module.init):
+                await self.module.init(**self.settings.as_dict)
+            else:
+                self.module.init(**self.settings.as_dict)
 
     async def init_senders(self):
         self.senders_queues = {
