@@ -23,6 +23,6 @@ rules:
     'minute': 45
   }}
 }}
-Для указания даты и времени, учитывай, что сейчас %time% %date%"}]]
+Для указания даты и времени, учитывай, что сейчас %time% %date%"}], json_find]
     purposes: [tg_msg]
     acceptors: [calendar_acceptor]
