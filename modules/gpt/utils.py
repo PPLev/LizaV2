@@ -16,6 +16,7 @@ class GPTConfig:
     url: str
     token: str
     sys_prompt: str
+    model: str
 
 
 gpt_config: GPTConfig = None
@@ -29,8 +30,8 @@ async def gpt_req(prompt):
             {"role": "user", "content": prompt}
         ]
     }
-    # if self.model:
-    #     data.update({"model": self.model})
+    if gpt_config.model:
+        data.update({"model": gpt_config.model})
 
     headers = {"Content-Type": "application/json"}
     if gpt_config.token:
@@ -58,7 +59,7 @@ async def ask_gpt(event: Event, prompt: str = "", context: List[str] = None) -> 
     return event
 
 
-async def init(openai_base: str, token: str, sys_prompt: str):
+async def init(openai_base: str, token: str, sys_prompt: str, model: str):
     global gpt_config
     if gpt_config is None:
-        gpt_config = GPTConfig(url=openai_base, token=token, sys_prompt=sys_prompt)
+        gpt_config = GPTConfig(url=openai_base, token=token, sys_prompt=sys_prompt, model=model)
