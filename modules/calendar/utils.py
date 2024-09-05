@@ -3,11 +3,12 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime
-
+import logging
 import caldav
 
 from event import Event
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class CalendarData:
@@ -47,20 +48,29 @@ async def add_event(url: str, username: str, password: str, queue: asyncio.Queue
     while True:
         await asyncio.sleep(0)
         if not queue.empty():
-            event = await queue.get()
-
+            event: Event = await queue.get()
+            logger.debug(f"Calendar get event {event.value}")
             data = json.loads(event.value)
             start = data['start']
             end = data['end']
+            start_date = datetime(start["year"], start["month"], start["day"], start["hour"], start["minute"])
+            if end:
+                end_date = datetime(end["year"], end["month"], end["day"], end["hour"], end["minute"])
+            else:
+                end_date = start_date
             try:
-                event = calendar.save_event(
-                    dtstart=datetime(start["year"], start["month"], start["day"], start["hour"], start["minute"]),
-                    dtend=datetime(end["year"], end["month"], end["day"], end["hour"], end["minute"]),
+                calendar.save_event(
+                    dtstart=start_date,
+                    dtend=end_date,
                     summary=data["text"],
                     rrule={},
                 )
+                await event.reply(
+                    f"""Событие "{data['text']}" на {start["month"]}.{start["day"]} """ +
+                    f"""в {start["hour"]}:{start["minute"]} добавлено."""
+                )
             except Exception as e:
-                print(f"Calendar add_event error: {e}")
+                logger.error(f"Calendar add_event error: {e}", exc_info=True)
 
 #
 # def get_events(calendar: Calendar, event: Event):

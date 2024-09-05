@@ -17,6 +17,12 @@ bot: Bot = None
 dp: Dispatcher = None
 
 
+# async def send_msg(event: Event):
+#     await bot.send_queue.put(
+#
+#     )
+
+
 @router.message(F.text == "/start")
 async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
     if msg.from_user.id == bot.admin_id:
@@ -84,7 +90,13 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
 
 async def run_client(env_path: str, admin_id: int, guest_text, queue: asyncio.Queue):
     global bot, dp
-    token = dotenv.dotenv_values(env_path)["TOKEN"]
+
+    if os.path.exists(env_path):
+        token = dotenv.dotenv_values(env_path)["TOKEN"]
+    else:
+        print(f"set telegram bot token as TOKEN in {env_path}")
+        raise FileNotFoundError
+
     try:
         bot = Bot(token=token)
         bot.admin_id = admin_id

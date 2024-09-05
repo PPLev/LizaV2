@@ -14,4 +14,10 @@ senders = [
     }
 ]
 
-intents = []
+intents = [
+    # {
+    #     "name": "reload",
+    #     "examples": ["отправь сообщение", "напиши сообщение"],
+    #     "function": send_msg
+    # }
+]

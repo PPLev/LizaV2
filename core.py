@@ -2,7 +2,7 @@ import asyncio
 import os.path
 from typing import List
 
-from connection import Connection
+from connection import Connection, IOPair
 from event import EventTypes, Event
 from module_manager import ModuleManager
 from nlu import NLU
@@ -23,10 +23,12 @@ class Core:
         self.MM = ModuleManager()
         self.nlu: NLU = None
         self.connection_rules = Connection.load_file("connections/connections.yml")
+        self.io_pairs = IOPair.load_file("connections/connections.yml")
 
         for module in self.MM.list_modules():
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
                 self.connection_rules.extend(Connection.load_file(module_conn))
+                self.io_pairs.extend(IOPair.load_file(module_conn))
 
     def init(self):
         self.MM.init_modules()
@@ -67,6 +69,10 @@ class Core:
                     continue
 
                 event = await queue.get()
+
+                for pair in self.io_pairs:
+                    if name == pair.sender_name:
+                        event.out_queue = self.MM.get_acceptor_queues()[pair.acceptor_name]
 
                 if event.event_type == EventTypes.user_command:
                     await asyncio.create_task(

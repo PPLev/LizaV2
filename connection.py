@@ -21,6 +21,37 @@ class Extension:
         return applied_event
 
 
+class IOPair:
+    def __init__(self, sender_name, acceptor_name, **kwargs):
+        self.sender_name = sender_name
+        self.acceptor_name = acceptor_name
+
+    @staticmethod
+    def load_file(filename: str) -> List['IOPair']:
+        if not os.path.isfile(filename):
+            return []
+
+        with open(filename, 'r', encoding="utf-8") as file:
+            data = yaml.safe_load(file)
+
+        pairs = []
+
+        if "io_pairs" in data:
+            for sender_name, acceptor_name in data["io_pairs"].items():
+                pairs.append(
+                    IOPair(
+                        sender_name=sender_name,
+                        acceptor_name=acceptor_name
+                    )
+                )
+
+        if "includes" in data:
+            for addition in data["includes"]:
+                pairs.extend(IOPair.load_file(addition))
+
+        return pairs
+
+
 class Connection:
     name: str
     senders: List[str]
@@ -45,16 +76,18 @@ class Connection:
 
         connections = []
 
-        for rule in data["rules"]:
-            connections.append(
-                Connection(
-                    name=rule,
-                    **data["rules"][rule]
+        if "rules" in data:
+            for rule in data["rules"]:
+                connections.append(
+                    Connection(
+                        name=rule,
+                        **data["rules"][rule]
+                    )
                 )
-            )
 
-        for addition in data["includes"]:
-            connections.extend(Connection.load_file(addition))
+        if "includes" in data:
+            for addition in data["includes"]:
+                connections.extend(Connection.load_file(addition))
 
         return connections
 

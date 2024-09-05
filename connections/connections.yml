@@ -11,3 +11,6 @@ rules:
     before_ext: [recognize_file_vosk]
     purposes: [voice]
     acceptors: [silero_say_acceptor]
+
+io_pairs:
+  vosk_send: silero_say_acceptor

@@ -44,18 +44,6 @@ async def recognize_file_vosk(event: Event):
     return event
 
 
-async def file_acceptor(model_dir_path: str, queue: asyncio.Queue = None, **kwargs):
-    global vosk_model
-    if vosk_model is None:
-        vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
-    while True:
-        await asyncio.sleep(0)
-        if not queue.empty():
-            event = await queue.get()
-            text = file_recognizer(file=event.value)
-            await event.hook(text)
-
-
 async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=False, queue: asyncio.Queue = None, **kwargs):
     global vosk_model
     pa = pyaudio.PyAudio()
