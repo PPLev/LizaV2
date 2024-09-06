@@ -6,7 +6,11 @@ import sounddevice
 import torch
 from event import Event
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
+
+
+def to_waw(event: Event):
+    pass
 
 
 async def say_acceptor(
