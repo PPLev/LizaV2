@@ -70,8 +70,8 @@ class Core:
     async def run(self):
         await self.MM.run_queues()
         while True:
-            await asyncio.sleep(0)
             for name, queue in self.MM.get_senders_queues().items():
+                await asyncio.sleep(0)
                 queue: asyncio.Queue
                 if queue.empty():
                     continue
