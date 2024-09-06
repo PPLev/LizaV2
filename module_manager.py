@@ -48,7 +48,7 @@ class Intent:
         if self.queue:
             if self.purpose:
                 event.purpose = self.purpose
-                await mm.get_acceptor_queues()[self.queue].put(event)
+            await mm.get_acceptor_queues()[self.queue].put(event)
 
 
 @dataclass
