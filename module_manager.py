@@ -6,7 +6,9 @@ from dataclasses import dataclass
 from typing import List, Dict
 import shutil
 
-logger = logging.getLogger("root")
+from event import Event
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -15,6 +17,38 @@ class SubModule:
     senders: List[dict]
     intents: list[dict]
     extensions: List[dict]
+
+
+class Intent:
+    def __init__(
+        self, 
+        name: str, 
+        examples: List[str], 
+        queue: str = None, 
+        purpose: str = None, 
+        function: callable = None
+    ):
+        self.name = name
+        self.examples = examples
+        if queue:
+            self.queue = queue
+            self.purpose = purpose
+        elif function:
+            self.function = function
+        else:
+            logger.warning(f"""Rule "{name}" not contain queue or function and can not to be executed""")
+
+    async def run(self, event: Event, mm: 'ModuleManager'):
+        if self.function:
+            if asyncio.iscoroutinefunction(self.function):
+                await self.function(event)
+            else:
+                self.function(event)
+
+        if self.queue:
+            if self.purpose:
+                event.purpose = self.purpose
+                await mm.get_acceptor_queues()[self.queue].put(event)
 
 
 @dataclass
@@ -61,8 +95,6 @@ class Module:
             return
 
         self.module: SubModule = getattr(__import__(f"modules.{self.name}.main"), self.name).main
-
-        self.intents = {}
         self.version = self.settings.version
 
     async def init(self):
@@ -126,7 +158,7 @@ class ModuleManager:
     def __init__(self):
         self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}")]
         self.modules: Dict[str, Module] = {}
-        self.intents = {}
+        self.intents = []
         self.extensions = {}
         self.senders_queues: Dict[str, asyncio.Queue] = {}
         self.acceptor_queues: Dict[str, asyncio.Queue] = {}
@@ -154,7 +186,7 @@ class ModuleManager:
 
             if hasattr(self.modules[module_name].module, "intents"):
                 for intent in self.modules[module_name].get_intents():
-                    self.intents[intent["name"]] = intent
+                    self.intents.append(intent)
 
             if hasattr(self.modules[module_name].module, "extensions"):
                 for extension in self.modules[module_name].get_extensions():

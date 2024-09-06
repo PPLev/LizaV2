@@ -1,0 +1,3 @@
+ver: "1.0"
+io_pairs:
+  telegram_bot_sender: telegram_bot_acceptor

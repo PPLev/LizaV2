@@ -14,7 +14,14 @@ acceptors = [
 #     }
 # ]
 #
-# intents = []
+# intents = [
+#     {
+#         "name": "reload",
+#         "examples": ["запомни", "запиши", "добавь событие"],
+#         "queue": "calendar_acceptor",
+#         "purpose": "new_event"
+#     }
+# ]
 #
 # extensions = [
 #     {

@@ -4,7 +4,7 @@ from typing import List
 
 from connection import Connection, IOPair
 from event import EventTypes, Event
-from module_manager import ModuleManager
+from module_manager import ModuleManager, Intent
 from nlu import NLU
 import logging
 
@@ -19,11 +19,11 @@ v = "0.1"
 
 class Core:
     def __init__(self, connection_config_path="modules/connections.json"):
-        self.queues = {}
         self.MM = ModuleManager()
         self.nlu: NLU = None
         self.connection_rules = Connection.load_file("connections/connections.yml")
         self.io_pairs = IOPair.load_file("connections/connections.yml")
+        self.intents: List[Intent] = None
 
         for module in self.MM.list_modules():
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
@@ -34,9 +34,9 @@ class Core:
         self.MM.init_modules()
         self._init_ext()
         if len(self.MM.intents) > 2:
-            intents = {name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
             self.nlu = NLU(
-                intents=intents
+                intents={intent.name: intent.examples for intent in self.intents},
             )
 
     def _init_ext(self):
@@ -52,11 +52,19 @@ class Core:
         intent = self.nlu.classify_text(text=command_str)
         logger.debug(f"intent: {intent}")
         intent_name = intent[0][0]
-        intent_function = self.MM.intents[intent_name]["function"]
-        asyncio.run_coroutine_threadsafe(
-            coro=intent_function(event),
-            loop=asyncio.get_running_loop()
-        )
+
+        intent: List[Intent] = list(filter(lambda intent: intent.name == intent_name, self.intents))
+        if len(intent) == 1:
+            asyncio.run_coroutine_threadsafe(
+                coro=intent[0].run(event, self.MM),
+                loop=asyncio.get_running_loop()
+            )
+
+        # intent_function = self.MM.intents[intent_name]["function"]
+        # asyncio.run_coroutine_threadsafe(
+        #     coro=intent_function(event),
+        #     loop=asyncio.get_running_loop()
+        # )
         logger.debug(f"command: {command_str} start")
 
     async def run(self):
