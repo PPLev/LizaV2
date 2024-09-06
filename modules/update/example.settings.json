@@ -1,0 +1,9 @@
+{
+  "version": "0.1",
+  "is_active": false,
+  "require_modules": [],
+  "config": {
+    "repo_url": "https://github.com/AzimovIz/Liza",
+    "branch_name": "main"
+  }
+}
