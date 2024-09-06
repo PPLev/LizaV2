@@ -44,7 +44,7 @@ async def recognize_file_vosk(event: Event):
     return event
 
 
-async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=False, queue: asyncio.Queue = None, **kwargs):
+async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=False, ext_only=False, queue: asyncio.Queue = None, **kwargs):
     global vosk_model
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,
@@ -55,15 +55,18 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=Fals
                      frames_per_buffer=8000)
 
     if not os.path.isdir(model_dir_path):
-        logger.warning("Папка модели воск не найдена\n"
+        logger.warning("Vosk: Папка модели воск не найдена\n"
                        "Please download a model for your language from https://alphacephei.com/vosk/models")
-        sys.exit(0)
+        raise FileNotFoundError
 
     if vosk_model is None:
         vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
     rec = vosk.KaldiRecognizer(vosk_model, 44100)
 
     logger.info("Запуск распознователя речи vosk вход в цикл")
+
+    if ext_only:
+        return
 
     while True:
         await asyncio.sleep(0)
