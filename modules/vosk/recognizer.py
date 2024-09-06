@@ -53,10 +53,11 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=Fals
 
     if vosk_model is None:
         vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель
-    rec = vosk.KaldiRecognizer(vosk_model, 44100)
 
     if ext_only:
         return
+
+    rec = vosk.KaldiRecognizer(vosk_model, 44100)
 
     pa = pyaudio.PyAudio()
     stream = pa.open(format=pyaudio.paInt16,

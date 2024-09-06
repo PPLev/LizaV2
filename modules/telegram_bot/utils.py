@@ -38,7 +38,7 @@ async def msg_handler(msg: types.Message, bot: Bot, *args, **kwargs):
     if msg.from_user.id == bot.admin_id:
         await bot.send_queue.put(
             Event(
-                event_type=EventTypes.text,
+                event_type=EventTypes.user_command,
                 value=msg.text,
                 purpose="tg_msg"
             )

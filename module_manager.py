@@ -3,10 +3,11 @@ import json
 import logging
 import os
 from dataclasses import dataclass
+from tkinter import EventType
 from typing import List, Dict
 import shutil
 
-from event import Event
+from event import Event, EventTypes
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,11 @@ class Intent:
     ):
         self.name = name
         self.examples = examples
-        if queue:
-            self.queue = queue
-            self.purpose = purpose
-        elif function:
-            self.function = function
-        else:
-            logger.warning(f"""Rule "{name}" not contain queue or function and can not to be executed""")
+        self.queue = queue
+        self.purpose = purpose
+        self.function = function
+        # else:
+        #     logger.warning(f"""Rule "{name}" not contain queue or function and can not to be executed""")
 
     async def run(self, event: Event, mm: 'ModuleManager'):
         if self.function:
@@ -46,6 +45,7 @@ class Intent:
                 self.function(event)
 
         if self.queue:
+            event.event_type = EventTypes.text
             if self.purpose:
                 event.purpose = self.purpose
             await mm.get_acceptor_queues()[self.queue].put(event)
@@ -210,6 +210,7 @@ class ModuleManager:
             if hasattr(module.module, "senders"):
                 await module.init_senders()
                 self.senders_queues.update(module.get_senders_queues())
+                self.senders_queues.update({"core": asyncio.Queue()})
 
         logger.debug("очереди созданы")
 

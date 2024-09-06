@@ -1,24 +1,16 @@
 import asyncio
-import json
-import os
-from dataclasses import dataclass
-from datetime import datetime
 import logging
 import caldav
-
+from .cal_funcs import create_event, CalendarData
 from event import Event
 
 logger = logging.getLogger(__name__)
 
-@dataclass
-class CalendarData:
-    url: str
-    username: str
-    password: str
 
 
 calendar_data: CalendarData = None
 
+calendar_queue: asyncio.Queue = None
 
 # def with_calendar(url=None, login=None, password=None):
 #     def calendar_client(func: callable) -> callable:
@@ -41,7 +33,16 @@ calendar_data: CalendarData = None
 #     return calendar_client
 
 
-async def add_event(url: str, username: str, password: str, queue: asyncio.Queue = None, **kwargs):
+async def cal_sender(url: str, username: str, password: str, queue: asyncio.Queue = None, **kwargs):
+    while True:
+        await asyncio.sleep(0)
+        if not calendar_queue.empty():
+            event = await calendar_queue.get()
+            event.purpose = event.purpose.replace('pre_', '')
+            await queue.put(event)
+
+
+async def cal_acceptor(url: str, username: str, password: str, queue: asyncio.Queue = None, **kwargs):
     client = caldav.DAVClient(url=url, username=username, password=password)
     calendar = client.calendar(url=url)
 
@@ -49,28 +50,12 @@ async def add_event(url: str, username: str, password: str, queue: asyncio.Queue
         await asyncio.sleep(0)
         if not queue.empty():
             event: Event = await queue.get()
-            logger.debug(f"Calendar get event {event.value}")
-            data = json.loads(event.value)
-            start = data['start']
-            end = data['end']
-            start_date = datetime(start["year"], start["month"], start["day"], start["hour"], start["minute"])
-            if end:
-                end_date = datetime(end["year"], end["month"], end["day"], end["hour"], end["minute"])
-            else:
-                end_date = start_date
-            try:
-                calendar.save_event(
-                    dtstart=start_date,
-                    dtend=end_date,
-                    summary=data["text"],
-                    rrule={},
-                )
-                await event.reply(
-                    f"""Событие "{data['text']}" на {start["month"]}.{start["day"]} """ +
-                    f"""в {start["hour"]}:{start["minute"]} добавлено."""
-                )
-            except Exception as e:
-                logger.error(f"Calendar add_event error: {e}", exc_info=True)
+
+            if event.purpose == "add_event":
+                await create_event(event, calendar)
+
+            elif event.purpose == "pre_add_event":
+                await calendar_queue.put(event)
 
 #
 # def get_events(calendar: Calendar, event: Event):
@@ -78,5 +63,6 @@ async def add_event(url: str, username: str, password: str, queue: asyncio.Queue
 
 
 def init(url=None, username=None, password=None):
-    global calendar_data
+    global calendar_data, calendar_queue
+    calendar_queue = asyncio.Queue()
     calendar_data = CalendarData(url, username, password)
