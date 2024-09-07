@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import List, Dict
 import shutil
 
-from event import Event
+from event import Event, EventTypes
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +30,15 @@ class Intent:
     ):
         self.name = name
         self.examples = examples
-        if queue:
+        if (function and queue) or (not function and not queue):
+            logger.warning(f"""Rule "{name}" contain error queue or function and can not to be executed""")
+            self.function = None
+            self.queue = None
+            self.purpose = None
+        else:
             self.queue = queue
             self.purpose = purpose
-        elif function:
             self.function = function
-        else:
-            logger.warning(f"""Rule "{name}" not contain queue or function and can not to be executed""")
 
     async def run(self, event: Event, mm: 'ModuleManager'):
         if self.function:
@@ -44,11 +46,13 @@ class Intent:
                 await self.function(event)
             else:
                 self.function(event)
+            return
 
         if self.queue:
+            event.event_type = EventTypes.text
             if self.purpose:
                 event.purpose = self.purpose
-                await mm.get_acceptor_queues()[self.queue].put(event)
+            await mm.get_acceptor_queues()[self.queue].put(event)
 
 
 @dataclass
@@ -210,6 +214,7 @@ class ModuleManager:
             if hasattr(module.module, "senders"):
                 await module.init_senders()
                 self.senders_queues.update(module.get_senders_queues())
+                self.senders_queues.update({"core": asyncio.Queue()})
 
         logger.debug("очереди созданы")
 

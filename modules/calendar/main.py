@@ -1,27 +1,27 @@
-from .utils import init, add_event
+from .utils import init, cal_acceptor, cal_sender
 
 acceptors = [
     {
         "name": "calendar_acceptor",
-        "function": add_event
+        "function": cal_acceptor
     }
 ]
 
-# senders = [
-#     {
-#         "name": "vosk_send",
-#         "function": run_vosk
-#     }
-# ]
+senders = [
+    {
+        "name": "calendar_sender",
+        "function": cal_sender
+    }
+]
 #
-# intents = [
-#     {
-#         "name": "reload",
-#         "examples": ["запомни", "запиши", "добавь событие"],
-#         "queue": "calendar_acceptor",
-#         "purpose": "new_event"
-#     }
-# ]
+intents = [
+    {
+        "name": "add_event",
+        "examples": ["запомни что-то", "запиши это", "добавь событие об"],
+        "queue": "calendar_acceptor",
+        "purpose": "pre_add_event"
+    }
+]
 #
 # extensions = [
 #     {
