@@ -30,11 +30,15 @@ class Intent:
     ):
         self.name = name
         self.examples = examples
-        self.queue = queue
-        self.purpose = purpose
-        self.function = function
-        # else:
-        #     logger.warning(f"""Rule "{name}" not contain queue or function and can not to be executed""")
+        if (function and queue) or (not function and not queue):
+            logger.warning(f"""Rule "{name}" contain error queue or function and can not to be executed""")
+            self.function = None
+            self.queue = None
+            self.purpose = None
+        else:
+            self.queue = queue
+            self.purpose = purpose
+            self.function = function
 
     async def run(self, event: Event, mm: 'ModuleManager'):
         if self.function:
@@ -42,6 +46,7 @@ class Intent:
                 await self.function(event)
             else:
                 self.function(event)
+            return
 
         if self.queue:
             event.event_type = EventTypes.text

@@ -6,11 +6,10 @@ from event import Event
 
 logger = logging.getLogger(__name__)
 
-
-
 calendar_data: CalendarData = None
 
 calendar_queue: asyncio.Queue = None
+
 
 # def with_calendar(url=None, login=None, password=None):
 #     def calendar_client(func: callable) -> callable:
@@ -56,6 +55,7 @@ async def cal_acceptor(url: str, username: str, password: str, queue: asyncio.Qu
 
             elif event.purpose == "pre_add_event":
                 await calendar_queue.put(event)
+
 
 #
 # def get_events(calendar: Calendar, event: Event):
