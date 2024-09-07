@@ -44,7 +44,15 @@ async def recognize_file_vosk(event: Event):
     return event
 
 
-async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=False, ext_only=False, queue: asyncio.Queue = None, **kwargs):
+async def run_vosk(
+        model_dir_path: str,
+        input_device_id=-1,
+        send_text_event=False,
+        ext_only=False,
+        queue: asyncio.Queue = None,
+        trigger_name="",
+        **kwargs
+):
     global vosk_model
     if not os.path.isdir(model_dir_path):
         logger.warning("Vosk: Папка модели воск не найдена\n"
@@ -67,6 +75,8 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=Fals
                      input_device_index=input_device_id,
                      frames_per_buffer=8000)
 
+    names = [i for i in trigger_name.split("|")]
+
     logger.info("Запуск распознователя речи vosk вход в цикл")
 
     while True:
@@ -76,9 +86,17 @@ async def run_vosk(model_dir_path: str, input_device_id=-1, send_text_event=Fals
         if rec.AcceptWaveform(data):
             recognized_data = rec.Result()
             recognized_data = json.loads(recognized_data)
-            voice_input_str = recognized_data["text"]
+            voice_input_str: str = recognized_data["text"]
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
+                if len(names):
+                    if any([voice_input_str.startswith(name) for name in names]):
+                        logger.debug("Имя обнаружено!")
+                        # TODO: Сделать удаление имени
+                    else:
+                        logger.debug("Имя не найдено!")
+                        continue
+
                 await queue.put(
                     Event(
                         event_type=EventTypes.user_command,

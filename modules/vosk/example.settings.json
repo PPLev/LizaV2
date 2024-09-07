@@ -6,6 +6,7 @@
     "model_dir_path": "modules/vosk/model",
     "input_device_id": -1,
     "send_text_event": false,
-    "ext_only": false
+    "ext_only": false,
+    "trigger_name": "лиза|лиса"
   }
 }

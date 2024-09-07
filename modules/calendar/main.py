@@ -17,7 +17,7 @@ senders = [
 intents = [
     {
         "name": "add_event",
-        "examples": ["запомни", "запиши", "добавь событие"],
+        "examples": ["запомни что-то", "запиши это", "добавь событие об"],
         "queue": "calendar_acceptor",
         "purpose": "pre_add_event"
     }
