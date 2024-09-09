@@ -13,8 +13,8 @@ class SubModule:
 
 class ModuleQueues:
     def __init__(self):
-        self.input = asyncio.Queue()
-        self.output = asyncio.Queue()
+        self.input = asyncio.Queue(maxsize=50)
+        self.output = asyncio.Queue(maxsize=50)
 
 
 @dataclass

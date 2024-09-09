@@ -204,10 +204,8 @@ class ModuleManager:
 
             await module.init()
 
-            for module_name in self.name_list:
-                await self.modules[module_name].run()
-
-            # TODO: Запуск модулей через класс очереди модуля через класс модуля
+        for module_name in self.name_list:
+            await self.modules[module_name].run()
 
         logger.debug("очереди созданы")
 
