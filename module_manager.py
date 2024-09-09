@@ -92,12 +92,12 @@ class Module:
     async def run(self):
         if self.module.sender:
             asyncio.run_coroutine_threadsafe(
-                coro=self.module.sender(queue=self.queues.input, config=self.settings.as_dict),
+                coro=self.module.sender(queue=self.queues.output, config=self.settings.as_dict),
                 loop=asyncio.get_running_loop()
             )
         if self.module.acceptor:
             asyncio.run_coroutine_threadsafe(
-                coro=self.module.acceptor(queue=self.queues.output, config=self.settings.as_dict),
+                coro=self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict),
                 loop=asyncio.get_running_loop()
             )
 

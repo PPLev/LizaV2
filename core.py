@@ -84,7 +84,10 @@ class Core:
 
                 for pair in self.io_pairs:
                     if name == pair.destination:
-                        event.out_queue = self.MM.queues[name].input
+                        event.out_queue = self.MM.queues[pair.target].input
+                        break
+                else:
+                    event.out_queue = queues.input
 
                 if event.event_type == EventTypes.user_command:
                     await asyncio.create_task(
