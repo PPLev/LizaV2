@@ -1,6 +1,6 @@
 import asyncio
 import os.path
-from typing import List
+from typing import List, Dict
 
 from connection import Connection, IOPair
 from event import EventTypes, Event
@@ -41,7 +41,11 @@ class Core:
 
     def _init_ext(self):
         for connection in self.connection_rules:
-            connection.init_extensions(self.MM)
+            try:
+                connection.init_extensions(self.MM)
+            except KeyError as e:
+                logger.error(f"Ошибка правила {connection.name} расширение {e.args} не найдено")
+                self.connection_rules.remove(connection)
 
     async def run_command(self, event: Event):
         if not self.nlu:
@@ -71,16 +75,16 @@ class Core:
         await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
-            for name, queue in self.MM.get_senders_queues().items():
-                queue: asyncio.Queue
-                if queue.empty():
+            for name, queues in self.MM.queues.items():
+                sender_queue = queues.output
+                if sender_queue.empty():
                     continue
 
-                event = await queue.get()
+                event = await sender_queue.get()
 
                 for pair in self.io_pairs:
                     if name == pair.sender_name:
-                        event.out_queue = self.MM.get_acceptor_queues()[pair.acceptor_name]
+                        event.out_queue = queues.input
 
                 if event.event_type == EventTypes.user_command:
                     await asyncio.create_task(
@@ -95,3 +99,12 @@ class Core:
                         asyncio.run_coroutine_threadsafe(
                             coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
                         )
+
+    async def get_module(self, module_name):
+        return self.MM.get_module(module_name)
+
+    async def set_context(self, key, data):
+        pass
+
+    async def get_context(self, key):
+        pass

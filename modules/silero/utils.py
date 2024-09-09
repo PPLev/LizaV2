@@ -14,13 +14,13 @@ def to_waw(event: Event):
 
 
 async def say_acceptor(
-        model_path: str,
-        model_name: str,
-        model_url: str,
-        output_device_id: int = None,
         queue: asyncio.Queue = None,
-        **kwargs
+        config: dict = None,
 ):
+    output_device_id = config['output_device_id']
+    model_path = config['model_path']
+    model_name = config['model_name']
+    model_url = config['model_url']
     if output_device_id:
         sounddevice.default.device = (None, output_device_id)
     # Если нет файла модели - скачиваем

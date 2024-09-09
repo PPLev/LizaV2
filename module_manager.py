@@ -7,26 +7,19 @@ from typing import List, Dict
 import shutil
 
 from event import Event, EventTypes
+from utils import SubModule, Settings, ModuleQueues
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class SubModule:
-    acceptors: List[dict]
-    senders: List[dict]
-    intents: list[dict]
-    extensions: List[dict]
-
-
 class Intent:
     def __init__(
-        self, 
-        name: str, 
-        examples: List[str], 
-        queue: str = None, 
-        purpose: str = None, 
-        function: callable = None
+            self,
+            name: str,
+            examples: List[str],
+            queue: str = None,
+            purpose: str = None,
+            function: callable = None
     ):
         self.name = name
         self.examples = examples
@@ -55,32 +48,9 @@ class Intent:
             await mm.get_acceptor_queues()[self.queue].put(event)
 
 
-@dataclass
-class Settings:
-    version: str
-    is_active: bool
-    config: dict
-    require_modules: list
-
-    @staticmethod
-    def from_dict(data):
-        settings = Settings(
-            version=data["version"],
-            is_active=data["is_active"],
-            config=data["config"],
-            require_modules=data["require_modules"] if "require_modules" in data else [],
-        )
-        return settings
-
-    @property
-    def as_dict(self):
-        return self.config.copy()
-
-
 class Module:
     def __init__(self, name):
-        self.acceptor_queues = None
-        self.senders_queues = None
+        self.queues: ModuleQueues = ModuleQueues()
         self.name = name
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
             if os.path.isfile(f"modules/{self.name}/example.settings.json"):
@@ -93,12 +63,23 @@ class Module:
                 return
 
         with open(f"modules/{self.name}/settings.json", "r", encoding="utf-8") as file:
-            self.settings: Settings = Settings.from_dict(json.load(file))
+            self.settings = Settings.from_dict(json.load(file))
 
         if not self.settings.is_active:
             return
 
         self.module: SubModule = getattr(__import__(f"modules.{self.name}.main"), self.name).main
+
+        if not hasattr(self.module, "acceptor"):
+            self.module.acceptor = None
+        if not hasattr(self.module, "sender"):
+            self.module.sender = None
+        if not hasattr(self.module, "intents"):
+            self.module.intents = None
+        if not hasattr(self.module, "extensions"):
+            self.module.extensions = None
+
+
         self.version = self.settings.version
 
     async def init(self):
@@ -108,27 +89,39 @@ class Module:
             else:
                 self.module.init(**self.settings.as_dict)
 
-    async def init_senders(self):
-        self.senders_queues = {
-            i["name"]: asyncio.Queue() for i in self.module.senders
-        }
-
-        for sender in self.module.senders:
+    async def run(self):
+        if self.module.sender:
             asyncio.run_coroutine_threadsafe(
-                coro=sender["function"](**self.settings.config, queue=self.senders_queues[sender["name"]]),
+                coro=self.module.sender(queue=self.queues.input, config=self.settings.as_dict),
+                loop=asyncio.get_running_loop()
+            )
+        if self.module.acceptor:
+            asyncio.run_coroutine_threadsafe(
+                coro=self.module.acceptor(queue=self.queues.output, config=self.settings.as_dict),
                 loop=asyncio.get_running_loop()
             )
 
-    async def init_acceptors(self):
-        self.acceptor_queues = {
-            i["name"]: asyncio.Queue() for i in self.module.acceptors
-        }
-
-        for acceptor in self.module.acceptors:
-            asyncio.run_coroutine_threadsafe(
-                coro=acceptor["function"](**self.settings.config, queue=self.acceptor_queues[acceptor["name"]]),
-                loop=asyncio.get_running_loop()
-            )
+    # async def init_senders(self):
+    #     self.senders_queues = {
+    #         i["name"]: asyncio.Queue() for i in self.module.senders
+    #     }
+    #
+    #     for sender in self.module.senders:
+    #         asyncio.run_coroutine_threadsafe(
+    #             coro=sender["function"](**self.settings.config, queue=self.senders_queues[sender["name"]]),
+    #             loop=asyncio.get_running_loop()
+    #         )
+    #
+    # async def init_acceptors(self):
+    #     self.acceptor_queues = {
+    #         i["name"]: asyncio.Queue() for i in self.module.acceptors
+    #     }
+    #
+    #     for acceptor in self.module.acceptors:
+    #         asyncio.run_coroutine_threadsafe(
+    #             coro=acceptor["function"](**self.settings.config, queue=self.acceptor_queues[acceptor["name"]]),
+    #             loop=asyncio.get_running_loop()
+    #         )
 
     def get_intents(self):
         return self.module.intents
@@ -138,12 +131,12 @@ class Module:
 
     def get_extensions(self):
         return self.module.extensions
-
-    def get_senders_queues(self):
-        return self.senders_queues
-
-    def get_acceptor_queues(self):
-        return self.acceptor_queues
+    #
+    # def get_senders_queues(self):
+    #     return self.senders_queues
+    #
+    # def get_acceptor_queues(self):
+    #     return self.acceptor_queues
 
     def save_settings(self):
         with open(f"modules/{self.name}/settings.json", "w", encoding="utf-8") as file:
@@ -164,20 +157,21 @@ class ModuleManager:
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
-        self.senders_queues: Dict[str, asyncio.Queue] = {}
-        self.acceptor_queues: Dict[str, asyncio.Queue] = {}
 
     def init_modules(self):
         logger.debug("инициализация модулей...")
+        # TODO: Перенести в класс модуля
+        remove_names = []
         for module_name in self.name_list:
             module = Module(name=module_name)
 
-            if not module:
+            if not module or not module.settings.is_active:
                 logger.debug(f"модуль {module_name} НЕ инициализирован")
+                #self.name_list.remove(module_name)
+                #self.modules[module_name] = None
+                remove_names.append(module_name)
                 continue
 
-            if not module.settings.is_active:
-                continue
 
             if module.settings.require_modules:
                 for require_module in module.settings.require_modules:
@@ -188,15 +182,18 @@ class ModuleManager:
 
             self.modules[module_name] = module
 
-            if hasattr(self.modules[module_name].module, "intents"):
+            if self.modules[module_name].module.intents:
                 for intent in self.modules[module_name].get_intents():
                     self.intents.append(intent)
 
-            if hasattr(self.modules[module_name].module, "extensions"):
+            if self.modules[module_name].module.extensions:
                 for extension in self.modules[module_name].get_extensions():
                     self.extensions[extension["name"]] = extension["function"]
 
             logger.debug(f"модуль {module_name} инициализирован")
+
+        for name in remove_names:
+            self.name_list.remove(name)
 
         logger.debug("модули инициализированы")
 
@@ -207,25 +204,23 @@ class ModuleManager:
 
             await module.init()
 
-            if hasattr(module.module, "acceptors"):
-                await module.init_acceptors()
-                self.acceptor_queues.update(module.get_acceptor_queues())
+            for module_name in self.name_list:
+                await self.modules[module_name].run()
 
-            if hasattr(module.module, "senders"):
-                await module.init_senders()
-                self.senders_queues.update(module.get_senders_queues())
-                self.senders_queues.update({"core": asyncio.Queue()})
+            # TODO: Запуск модулей через класс очереди модуля через класс модуля
 
         logger.debug("очереди созданы")
 
+    @property
+    def queues(self):
+        queues = {}
+        for module_name in self.name_list:
+            queues[module_name] = self.modules[module_name].queues
+
+        return queues
+
     def get_extension(self, name):
         return self.extensions[name]
-
-    def get_senders_queues(self):
-        return self.senders_queues
-
-    def get_acceptor_queues(self):
-        return self.acceptor_queues
 
     def list_modules(self) -> List[str]:
         return self.name_list.copy()
@@ -235,3 +230,14 @@ class ModuleManager:
 
     def reinit_module(self, name):
         pass
+
+    def get_module(self, module_name):
+        pass
+
+    async def _get_event(self, name: str = None):
+        if not self.queues[name].output.empty():
+            event = await self.queues[name].output.get()
+            return event
+
+    async def _put_event(self, event, name: str = None):
+        await self.queues[name].input.put(event)
