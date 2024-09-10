@@ -2,6 +2,8 @@ import asyncio
 from dataclasses import dataclass
 from typing import List, Dict
 
+from event import Event
+
 
 @dataclass
 class SubModule:
@@ -11,10 +13,20 @@ class SubModule:
     extensions: List[dict]
 
 
+class AsyncModuleQueue(asyncio.Queue):
+    def __init__(self, name: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = name
+
+    async def put(self, value):
+        if isinstance(value, Event):
+            value.from_module = self.name
+
+
 class ModuleQueues:
-    def __init__(self):
-        self.input = asyncio.Queue(maxsize=50)
-        self.output = asyncio.Queue(maxsize=50)
+    def __init__(self, name:str):
+        self.input = AsyncModuleQueue(name, maxsize=50)
+        self.output = AsyncModuleQueue(name, maxsize=50)
 
 
 @dataclass

@@ -50,8 +50,8 @@ class Intent:
 
 class Module:
     def __init__(self, name):
-        self.queues: ModuleQueues = ModuleQueues()
         self.name = name
+        self.queues: ModuleQueues = ModuleQueues()
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
             if os.path.isfile(f"modules/{self.name}/example.settings.json"):
                 shutil.copyfile(
@@ -157,6 +157,7 @@ class ModuleManager:
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
+        self._queues = None
 
     def init_modules(self):
         logger.debug("инициализация модулей...")
@@ -211,11 +212,11 @@ class ModuleManager:
 
     @property
     def queues(self):
-        queues = {}
-        for module_name in self.name_list:
-            queues[module_name] = self.modules[module_name].queues
+        if not self._queues:
+            for module_name in self.name_list:
+                self._queues[module_name] = self.modules[module_name].queues
 
-        return queues
+        return self._queues
 
     def get_extension(self, name):
         return self.extensions[name]

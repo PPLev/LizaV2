@@ -9,11 +9,12 @@ class EventTypes:
 
 
 class Event:
-    def __init__(self, event_type: str, value=None, purpose=None, out_queue: asyncio.Queue = None, **kwargs):
+    def __init__(self, event_type: str, value=None, purpose=None, out_queue: asyncio.Queue = None, from_module: str = None, **kwargs):
         self.event_type = event_type
         self.value = value
         self.purpose = purpose
         self.out_queue = out_queue
+        self.from_module = from_module
         for key, val in kwargs.items():
             setattr(self, key, val)
 
