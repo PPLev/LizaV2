@@ -18,11 +18,11 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="modules/connections.json"):
+    def __init__(self, connection_config_path="connections/connections.yml"):
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load_file("connections/connections.yml")
-        self.io_pairs = IOPair.load_file("connections/connections.yml")
+        self.connection_rules = Connection.load_file(connection_config_path)
+        self.io_pairs = IOPair.load_file(connection_config_path)
         self.intents: List[Intent] = None
 
         for module in self.MM.list_modules():
