@@ -1,13 +1,11 @@
 ver: "1.0"
 includes: []
-rules:
+rules: []
 #  rule_1:
 #    senders: [vosk_send]
 #    before_ext: []
 #    purposes: []
-#    acceptors: [silero_say_acceptor]
-  rule_2:
-    senders: [telegram_bot_sender]
-    before_ext: [recognize_file_vosk]
-    purposes: [voice]
-    acceptors: [silero_say_acceptor]
+#    acceptors: [silero]
+
+io_pairs:
+  vosk: silero

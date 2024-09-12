@@ -22,11 +22,11 @@ class GPTConfig:
 gpt_config: GPTConfig = None
 
 
-async def gpt_req(prompt):
+async def gpt_req(prompt, sys_prompt):
     global gpt_config
     data = {
         "messages": [
-            {"role": "system", "content": gpt_config.sys_prompt},
+            {"role": "system", "content": sys_prompt or gpt_config.sys_prompt},
             {"role": "user", "content": prompt}
         ]
     }
@@ -44,7 +44,7 @@ async def gpt_req(prompt):
     return gpt_answer
 
 
-async def ask_gpt(event: Event, prompt: str = "", context: List[str] = None) -> Event:
+async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Event:
     context_items = {
         "%date%": lambda: datetime.now().strftime("%B %d, %Y"),
         "%time%": lambda: datetime.now().strftime("%H:%M:%S"),
@@ -55,7 +55,7 @@ async def ask_gpt(event: Event, prompt: str = "", context: List[str] = None) -> 
     for context_item, getter in context_items.items():
         prompt = prompt.replace(context_item, getter())
 
-    event.value = await gpt_req(prompt)
+    event.value = await gpt_req(prompt, sys_prompt)
     return event
 
 

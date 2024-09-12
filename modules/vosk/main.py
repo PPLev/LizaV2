@@ -1,18 +1,8 @@
-from .recognizer import run_vosk, file_acceptor, recognize_file_vosk
+from .recognizer import run_vosk, recognize_file_vosk
 
-acceptors = [
-    {
-        "name": "vosk_acceptor",
-        "function": file_acceptor
-    }
-]
+acceptor = None
 
-senders = [
-    {
-        "name": "vosk_send",
-        "function": run_vosk
-    }
-]
+sender = run_vosk
 
 intents = []
 
