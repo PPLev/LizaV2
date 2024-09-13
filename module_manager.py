@@ -51,7 +51,7 @@ class Intent:
 class Module:
     def __init__(self, name):
         self.name = name
-        self.queues: ModuleQueues = ModuleQueues()
+        self.queues: ModuleQueues = ModuleQueues(name=self.name)
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
             if os.path.isfile(f"modules/{self.name}/example.settings.json"):
                 shutil.copyfile(
@@ -213,6 +213,7 @@ class ModuleManager:
     @property
     def queues(self):
         if not self._queues:
+            self._queues = {}
             for module_name in self.name_list:
                 self._queues[module_name] = self.modules[module_name].queues
 
