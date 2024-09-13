@@ -22,9 +22,9 @@ class Extension:
 
 
 class IOPair:
-    def __init__(self, sender_name, acceptor_name, **kwargs):
-        self.sender_name = sender_name
-        self.acceptor_name = acceptor_name
+    def __init__(self, destination, target):
+        self.destination = destination
+        self.target = target
 
     @staticmethod
     def load_file(filename: str) -> List['IOPair']:
@@ -37,11 +37,11 @@ class IOPair:
         pairs = []
 
         if "io_pairs" in data:
-            for sender_name, acceptor_name in data["io_pairs"].items():
+            for destination, target in data["io_pairs"].items():
                 pairs.append(
                     IOPair(
-                        sender_name=sender_name,
-                        acceptor_name=acceptor_name
+                        destination=destination,
+                        target=target
                     )
                 )
 
@@ -116,6 +116,9 @@ class Connection:
         return event_connection_allowed
 
     async def run_event(self, event: Event, mm: ModuleManager):
+        if event.from_module not in self.senders:
+            return
+
         if not self.check_event(event):
             return
 
@@ -123,7 +126,7 @@ class Connection:
             event = await extension.apply(event)
 
         for acceptor in self.acceptors:
-            await mm.acceptor_queues[acceptor].put(event.copy())
+            await mm.queues[acceptor].input.put(event.copy())
 
 
 if __name__ == '__main__':

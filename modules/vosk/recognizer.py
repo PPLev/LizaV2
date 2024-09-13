@@ -45,15 +45,17 @@ async def recognize_file_vosk(event: Event):
 
 
 async def run_vosk(
-        model_dir_path: str,
-        input_device_id=-1,
-        send_text_event=False,
-        ext_only=False,
         queue: asyncio.Queue = None,
-        trigger_name="",
-        **kwargs
+        config: dict = None,
 ):
     global vosk_model
+
+    model_dir_path: str = config["model_dir_path"]
+    input_device_id = config["input_device_id"]
+    send_text_event = config["send_text_event"]
+    ext_only = config["ext_only"]
+    trigger_name = config["trigger_name"]
+
     if not os.path.isdir(model_dir_path):
         logger.warning("Vosk: Папка модели воск не найдена\n"
                        "Please download a model for your language from https://alphacephei.com/vosk/models")

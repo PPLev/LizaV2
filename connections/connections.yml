@@ -5,7 +5,7 @@ rules: []
 #    senders: [vosk_send]
 #    before_ext: []
 #    purposes: []
-#    acceptors: [silero_say_acceptor]
+#    acceptors: [silero]
 
 io_pairs:
-  vosk_send: silero_say_acceptor
+  vosk: silero

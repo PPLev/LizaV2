@@ -25,4 +25,4 @@ rules:
 }
 Для указания даты и времени, учитывай, что сейчас %time% %date%'}], json_find]
     purposes: [add_event]
-    acceptors: [calendar_acceptor]
+    acceptors: [calendar]
