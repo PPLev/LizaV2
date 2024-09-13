@@ -3,7 +3,7 @@
   "is_active": false,
   "require_modules": ["gpt"],
   "config": {
-    "url": "https://cloud.luklu.com/remote.php/dav",
+    "url": "https://cloud.luklu.com/remote.php/dav/calendars/admin/personal/",
     "username": "admin",
     "password": ""
   }
