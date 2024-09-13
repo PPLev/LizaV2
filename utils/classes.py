@@ -22,6 +22,8 @@ class AsyncModuleQueue(asyncio.Queue):
         if isinstance(value, Event):
             value.from_module = self.name
 
+        return await super().put(value)
+
 
 class ModuleQueues:
     def __init__(self, name:str):
