@@ -81,6 +81,7 @@ class Core:
                     continue
 
                 event = await sender_queue.get()
+                # logger.debug(f"event: {event.value} принят")
 
                 for pair in self.io_pairs:
                     if name == pair.destination:
