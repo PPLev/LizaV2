@@ -12,6 +12,7 @@ class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
     # cointegrated/roberta-base-formality - 0.97
     # cointegrated/rubert-tiny2 - 0.86
+    # cointegrated/rubert-tiny2-sentence-compression
     def __init__(self, intents: dict, model_name='cointegrated/rubert-tiny2-sentence-compression'):
         self.intents = intents
         self.example_vectors = []
@@ -85,8 +86,8 @@ class NLU:
 
 if __name__ == '__main__':
     intents = {
-        "add_calendar": ["запомни какое-то событие", "запиши что мне надо", "добавь событие о чем-то"],
-        "get_calendar": ["напомни мне об этом", "когда произойдет что-то", "через сколько дней будет это"],
+        "add_calendar": ["запомни какое-то событие", "запиши что мне надо", "добавь событие о чем-то", "напомни мне об этом позже", "напомни через час полить цветы"],
+        "get_calendar": ["напомни когда произойдет это", "скажи когда произойдет что-то", "через сколько дней будет это"],
         'music_d': ["сделай музыку тише", "уменьши громкость воспроизведения", "сделай звук тише"],
         'music_u': ["сделай музыку громче", "увелич громкость музыки", "сделай воспроизведение громче"],
         'music_pp': ["останови воспроизведение музыки", "останови воспроизведение", "сотановить музыку", "поставь воспроизведение музыки на паузу"],
@@ -94,5 +95,5 @@ if __name__ == '__main__':
         "run_upd": ["выключи лампу", "выключи свет"],
     }
     nlu = NLU(intents=intents)
-    rez = nlu.classify_text("она сказал что хочет остановить это", minimum_percent=0.82)
+    rez = nlu.classify_text("напомни завтра про врача")
     print(rez)
