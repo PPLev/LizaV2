@@ -92,9 +92,14 @@ async def run_vosk(
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
                 if len(names):
-                    if any([voice_input_str.startswith(name) for name in names]):
+                    for name in names:
+                        if name not in voice_input_str:
+                            continue
+
                         logger.debug("Имя обнаружено!")
-                        # TODO: Сделать удаление имени
+                        voice_input_str = " ".join(voice_input_str.split(name)[1:])
+                        break
+
                     else:
                         logger.debug("Имя не найдено!")
                         continue
