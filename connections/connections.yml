@@ -2,8 +2,8 @@ ver: "1.0"
 includes: []
 rules: []
 #  rule_1:
-#    senders: [vosk_send]
-#    before_ext: []
+#    senders: [vosk]
+#    before_ext: [[change_purpose, { new_purpose: "fgd" }]]
 #    purposes: []
 #    acceptors: [silero]
 
