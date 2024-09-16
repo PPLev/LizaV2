@@ -35,8 +35,10 @@ async def create_event(event: Event, calendar: caldav.Calendar):
             rrule={},
         )
         await event.reply(
-            f"""Событие "{data['text']}" на {start["day"]}.{"0" + str(start["month"]) if start["month"] < 10 else "0"} """ +
-            f"""в {start["hour"]}:{start["minute"]} добавлено."""
+            value=f"""Событие "{data['text']}" на """ +
+            f"""{start["day"]}.{"0" + str(start["month"]) if start["month"] < 10 else "0"} """ +
+            f"""в {start["hour"]}:{start["minute"]} добавлено.""",
+            new_purpose="add_event_complete"
         )
 
     except Exception as e:

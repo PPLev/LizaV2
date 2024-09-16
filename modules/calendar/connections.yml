@@ -23,6 +23,6 @@ rules:
     "minute": 45
   }
 }
-Для указания даты и времени, учитывай, что сейчас %time% %date%'}], json_find]
-    purposes: [add_event]
+Для указания даты и времени, учитывай, что сейчас %time% %date%'}], json_find, [change_purpose, {new_purpose: "add_event"}]]
+    purposes: [pre_add_event]
     acceptors: [calendar]

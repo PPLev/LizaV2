@@ -35,7 +35,7 @@ class Event:
                 Event(
                     event_type=EventTypes.text,
                     value=value,
-                    purpose=new_purpose or self.purpose,
+                    purpose=new_purpose,
                 )
             )
 

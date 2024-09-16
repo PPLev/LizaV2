@@ -45,7 +45,7 @@ class Intent:
             event.event_type = EventTypes.text
             if self.purpose:
                 event.purpose = self.purpose
-            await mm.get_acceptor_queues()[self.queue].put(event)
+            await mm.queues[self.queue].input.put(event)
 
 
 class Module:

@@ -33,7 +33,7 @@ class Core:
     def init(self):
         self.MM.init_modules()
         self._init_ext()
-        if len(self.MM.intents) > 2:
+        if len(self.MM.intents) > 1:
             self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
             self.nlu = NLU(
                 intents={intent.name: intent.examples for intent in self.intents},
@@ -64,11 +64,6 @@ class Core:
                 loop=asyncio.get_running_loop()
             )
 
-        # intent_function = self.MM.intents[intent_name]["function"]
-        # asyncio.run_coroutine_threadsafe(
-        #     coro=intent_function(event),
-        #     loop=asyncio.get_running_loop()
-        # )
         logger.debug(f"command: {command_str} start")
 
     async def run(self):
@@ -88,7 +83,7 @@ class Core:
                         event.out_queue = self.MM.queues[pair.target].input
                         break
                 else:
-                    event.out_queue = queues.input
+                    event.out_queue = self.MM.queues[event.from_module].input
 
                 if event.event_type == EventTypes.user_command:
                     await asyncio.create_task(
