@@ -88,8 +88,12 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
             )
 
 
-async def run_client(env_path: str, admin_id: int, guest_text, queue: asyncio.Queue):
+async def run_client(queue: asyncio.Queue, config: dict):
     global bot, dp
+
+    env_path = config["env_path"]
+    admin_id = config["admin_id"]
+    guest_text = config["guest_text"]
 
     if os.path.exists(env_path):
         token = dotenv.dotenv_values(env_path)["TOKEN"]

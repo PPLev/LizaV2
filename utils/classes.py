@@ -19,7 +19,7 @@ class AsyncModuleQueue(asyncio.Queue):
         self.name = name
 
     async def put(self, value):
-        if isinstance(value, Event):
+        if isinstance(value, Event) and value.from_module is None:
             value.from_module = self.name
 
         return await super().put(value)
