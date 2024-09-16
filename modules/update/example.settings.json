@@ -3,7 +3,8 @@
   "is_active": false,
   "require_modules": [],
   "config": {
-    "repo_url": "https://github.com/AzimovIz/Liza",
+    "repo_owner": "AzimovIz",
+    "repo_name": "main",
     "branch_name": "main"
   }
 }

@@ -1,11 +1,6 @@
-# from .utils import init, add_event
-#
-# acceptors = [
-#     {
-#         "name": "updater_acceptor",
-#         "function": updater_acceptor
-#     }
-# ]
+from .utils import updater_acceptor
+
+acceptor = updater_acceptor
 
 # senders = [
 #     {
@@ -13,21 +8,21 @@
 #         "function": run_vosk
 #     }
 # ]
-#
-# intents = [
-#     {
-#         "name": "check_update",
-#         "examples": ["проверь обновления", "есть ли новая версия", "проверь версию"],
-#         "queue": "updater_acceptor",
-#         "purpose": "inspect"
-#     },
-#     {
-#         "name": "update",
-#         "examples": ["обновись", "выполни обновление", "скачай обновление"],
-#         "queue": "updater_acceptor",
-#         "purpose": "run_update"
-#     }
-# ]
+
+intents = [
+    {
+        "name": "check_update",
+        "examples": ["проверь есть ли обновления", "узнай есть ли новая версия", "проверь наличие новой версии"],
+        "queue": "update",
+        "purpose": "inspect"
+    },
+    {
+        "name": "update",
+        "examples": ["загрузи обновление", "выполни обновление системмы", "скачай свежее обновление", "обновись до последней версии"],
+        "queue": "update",
+        "purpose": "update"
+    }
+]
 #
 # extensions = [
 #     {

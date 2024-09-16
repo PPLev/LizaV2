@@ -1,8 +1,11 @@
+import asyncio
 import os
 import subprocess
 import sys
 
 import httpx
+
+from event import Event
 
 
 def get_current_commit_sha(branch_name):
@@ -23,7 +26,7 @@ async def check_new_commit(repo_owner, repo_name, branch_name):
     """Проверяет, есть ли новый коммит в репозитории."""
     current_commit_sha = get_current_commit_sha(branch_name)
     if current_commit_sha is None:
-        return
+        return False
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/commits/{branch_name}"
 
     async with httpx.AsyncClient() as client:
@@ -38,11 +41,11 @@ async def check_new_commit(repo_owner, repo_name, branch_name):
 
         else:
             print("Коммитов нет, это последний коммит.", current_commit_sha)
-            return current_commit_sha  # Возвращаем текущий SHA, если нет нового коммита
+            return False
 
     else:
         print("Ошибка при обращении к GitHub API:", response.status_code)
-        return None
+        return False
 
 
 def update_local_repository(repo_path, branch_name):
@@ -54,3 +57,22 @@ def update_local_repository(repo_path, branch_name):
 
     except subprocess.CalledProcessError as e:
         print("Ошибка при обновлении репозитория:", e)
+
+
+async def updater_acceptor(queue: asyncio.Queue, config: dict):
+    repo_owner = config['repo_owner']
+    repo_name = config['repo_name']
+    branch_name = config['branch_name']
+
+    while True:
+        await asyncio.sleep(0)
+        if not queue.empty():
+            event: Event = await queue.get()
+            if event.purpose == "inspect":
+                if check_new_commit(repo_owner, repo_name, branch_name):
+                    await event.reply("Новая версия есть")
+                else:
+                    await event.reply("Нет новых версий")
+
+            if event.purpose == "update":
+                await event.reply("Типо обновилась")
