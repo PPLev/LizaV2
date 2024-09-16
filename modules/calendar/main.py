@@ -1,25 +1,21 @@
 from .utils import init, cal_acceptor, cal_sender
 
-acceptors = [
-    {
-        "name": "calendar_acceptor",
-        "function": cal_acceptor
-    }
-]
+acceptor = cal_acceptor
 
-senders = [
-    {
-        "name": "calendar_sender",
-        "function": cal_sender
-    }
-]
+sender = cal_sender
 #
 intents = [
     {
         "name": "add_event",
-        "examples": ["запомни что-то", "запиши это", "добавь событие об"],
-        "queue": "calendar_acceptor",
+        "examples": ["запомни какое-то событие", "запиши что мне надо", "добавь событие о чем-то", "напомни мне об этом позже", "напомни через час полить цветы"],
+        "queue": "calendar",
         "purpose": "pre_add_event"
+    },
+    {
+        "name": "get_event",
+        "examples": ["напомни когда произойдет это", "скажи когда произойдет что-то", "через сколько дней будет это"],
+        "queue": "calendar",
+        "purpose": "pre_get_event"
     }
 ]
 #

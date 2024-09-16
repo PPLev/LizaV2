@@ -77,7 +77,9 @@ async def run_vosk(
                      input_device_index=input_device_id,
                      frames_per_buffer=8000)
 
-    names = [i for i in trigger_name.split("|")]
+    names = []
+    if trigger_name:
+        names = [i for i in trigger_name.split("|")]
 
     logger.info("Запуск распознователя речи vosk вход в цикл")
 
@@ -92,9 +94,15 @@ async def run_vosk(
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
                 if len(names):
-                    if any([voice_input_str.startswith(name) for name in names]):
+                    for name in names:
+                        if name not in voice_input_str:
+                            continue
+
                         logger.debug("Имя обнаружено!")
-                        # TODO: Сделать удаление имени
+                        voice_input_str = " ".join(voice_input_str.split(name)[1:])
+                        voice_input_str = voice_input_str.strip()
+                        break
+
                     else:
                         logger.debug("Имя не найдено!")
                         continue

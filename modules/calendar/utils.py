@@ -32,16 +32,21 @@ calendar_queue: asyncio.Queue = None
 #     return calendar_client
 
 
-async def cal_sender(url: str, username: str, password: str, queue: asyncio.Queue = None, **kwargs):
+async def cal_sender(queue: asyncio.Queue, config: dict):
     while True:
         await asyncio.sleep(0)
         if not calendar_queue.empty():
             event = await calendar_queue.get()
-            event.purpose = event.purpose.replace('pre_', '')
+            #event.purpose = event.purpose.replace('pre_', '')
             await queue.put(event)
 
 
-async def cal_acceptor(url: str, username: str, password: str, queue: asyncio.Queue = None, **kwargs):
+async def cal_acceptor(queue: asyncio.Queue, config: dict):
+    global calendar_queue
+    url = config["url"]
+    username = config["username"]
+    password = config["password"]
+
     client = caldav.DAVClient(url=url, username=username, password=password)
     calendar = client.calendar(url=url)
 
