@@ -48,12 +48,12 @@ async def check_new_commit(repo_owner, repo_name, branch_name):
         return False
 
 
-def update_local_repository(repo_path, branch_name):
+def update_local_repository(branch_name):
     """Обновляет локальный репозиторий с удалённого."""
     try:
         # Переход к директории репозитория и выполнение git pull
-        subprocess.check_call(['git', '-C', repo_path, 'pull', 'origin', branch_name])
-        print(f"Локальный репозиторий в '{repo_path}' обновлён до ветки '{branch_name}'")
+        subprocess.check_call(['git', 'pull', 'origin', branch_name])
+        print(f"Обновилено до последнего коммита! Не забудь запустить перезагрузку")
 
     except subprocess.CalledProcessError as e:
         print("Ошибка при обновлении репозитория:", e)
