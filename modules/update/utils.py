@@ -74,7 +74,7 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
                 try:
                     subprocess.check_call(['git', 'pull', 'origin', branch_name])
                     if autoreload:
-                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь")
+                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь23")
                         # TODO: м.б. поменять на модуль перезагрузки
                         os.execv(sys.executable, [sys.executable] + sys.argv)
 
