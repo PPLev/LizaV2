@@ -65,7 +65,7 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
         if not queue.empty():
             event: Event = await queue.get()
             if event.purpose == "inspect":
-                if check_new_commit(repo_owner, repo_name, branch_name):
+                if await check_new_commit(repo_owner, repo_name, branch_name):
                     await event.reply("Новая версия есть")
                 else:
                     await event.reply("Нет новых версий")
@@ -74,7 +74,8 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
                 try:
                     subprocess.check_call(['git', 'pull', 'origin', branch_name])
                     if autoreload:
-                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь23")
+                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь")
+                        await asyncio.sleep(2)
                         # TODO: м.б. поменять на модуль перезагрузки
                         os.execv(sys.executable, [sys.executable] + sys.argv)
 
