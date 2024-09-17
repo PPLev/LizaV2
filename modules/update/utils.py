@@ -14,8 +14,8 @@ def get_current_commit_sha(branch_name):
     """Возвращает текущий SHA коммита для указанной ветки."""
     try:
         current_commit = subprocess.check_output(
-            ['git', '-C', ".", 'rev-parse', branch_name]
-        ).strip().decode('utf-8')
+            ["git", "rev-parse", "HEAD"]
+        ).strip().decode("utf-8")
 
         return current_commit
 
@@ -72,7 +72,7 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
 
             if event.purpose == "update":
                 try:
-                    subprocess.check_call(['git', 'pull', 'origin', branch_name])
+                    subprocess.check_call(["git", "pull"])
                     if autoreload:
                         await event.reply("Обновилено до последнего коммита! Перезагружаюсь")
                         await asyncio.sleep(2)
