@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import subprocess
 import sys
@@ -7,6 +8,7 @@ import httpx
 
 from event import Event
 
+logger = logging.getLogger(__name__)
 
 def get_current_commit_sha(branch_name):
     """Возвращает текущий SHA коммита для указанной ветки."""
@@ -50,19 +52,13 @@ async def check_new_commit(repo_owner, repo_name, branch_name):
 
 def update_local_repository(branch_name):
     """Обновляет локальный репозиторий с удалённого."""
-    try:
-        # Переход к директории репозитория и выполнение git pull
-        subprocess.check_call(['git', 'pull', 'origin', branch_name])
-        print(f"Обновилено до последнего коммита! Не забудь запустить перезагрузку")
-
-    except subprocess.CalledProcessError as e:
-        print("Ошибка при обновлении репозитория:", e)
 
 
 async def updater_acceptor(queue: asyncio.Queue, config: dict):
     repo_owner = config['repo_owner']
     repo_name = config['repo_name']
     branch_name = config['branch_name']
+    autoreload = config['autoreload']
 
     while True:
         await asyncio.sleep(0)
@@ -75,4 +71,16 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
                     await event.reply("Нет новых версий")
 
             if event.purpose == "update":
-                await event.reply("Типо обновилась")
+                try:
+                    subprocess.check_call(['git', 'pull', 'origin', branch_name])
+                    if autoreload:
+                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь")
+                        # TODO: м.б. поменять на модуль перезагрузки
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+                    else:
+                        await event.reply("Обновилено до последнего коммита! Не забудь запустить перезагрузку")
+                    
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Ошибка при обновлении репозитория: {e}", exc_info=True)
+                    await event.reply("Ошибка при обновлении репозитория")

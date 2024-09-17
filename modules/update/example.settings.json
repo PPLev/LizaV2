@@ -5,6 +5,7 @@
   "config": {
     "repo_owner": "AzimovIz",
     "repo_name": "Liza",
-    "branch_name": "main"
+    "branch_name": "main",
+    "autoreload": false
   }
 }
