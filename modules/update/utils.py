@@ -69,7 +69,7 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
                 if await check_new_commit(repo_owner, repo_name, branch_name):
                     await event.reply("Новая версия есть")
                 else:
-                    await event.reply("Нет новых версий23")
+                    await event.reply("Нет новых версий")
 
             if event.purpose == "update":
                 try:
