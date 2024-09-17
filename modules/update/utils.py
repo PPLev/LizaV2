@@ -10,6 +10,7 @@ from event import Event
 
 logger = logging.getLogger(__name__)
 
+
 def get_current_commit_sha(branch_name):
     """Возвращает текущий SHA коммита для указанной ветки."""
     try:
@@ -81,7 +82,7 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
 
                     else:
                         await event.reply("Обновилено до последнего коммита! Не забудь запустить перезагрузку")
-                    
+
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Ошибка при обновлении репозитория: {e}", exc_info=True)
                     await event.reply("Ошибка при обновлении репозитория")
