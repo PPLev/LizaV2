@@ -8,7 +8,7 @@ acceptor = updater_acceptor
 #         "function": run_vosk
 #     }
 # ]
-
+# test
 intents = [
     {
         "name": "check_update",
