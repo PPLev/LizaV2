@@ -26,7 +26,7 @@ class AsyncModuleQueue(asyncio.Queue):
 
 
 class ModuleQueues:
-    def __init__(self, name:str):
+    def __init__(self, name: str):
         self.input = AsyncModuleQueue(name, maxsize=50)
         self.output = AsyncModuleQueue(name, maxsize=50)
 
@@ -52,3 +52,22 @@ class Settings:
     @property
     def as_dict(self) -> Dict:
         return self.config.copy()
+
+
+class Context:
+    def __init__(self, context_queue: AsyncModuleQueue, origin_queue: AsyncModuleQueue):
+        self.context_queue = context_queue
+        self.origin_queue = origin_queue
+        self._data = {}
+
+    def update(self, data: dict):
+        self._data.update(data)
+
+    def get(self, key):
+        return self._data.get(key)
+
+    def __getitem__(self, key):
+        return self._data.get(key)
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
