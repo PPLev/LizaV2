@@ -42,6 +42,9 @@ class Event:
     def copy(self):
         return Event.from_dict(self.__dict__.copy())
 
+    async def set_context(self, init_context_data: dict):
+        pass
+
 
 if __name__ == '__main__':
     event = Event.from_dict({"event_type": "user_command", "value": 1})
