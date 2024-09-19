@@ -55,10 +55,27 @@ class Settings:
 
 
 class Context:
-    def __init__(self, context_queue: AsyncModuleQueue, origin_queue: AsyncModuleQueue):
-        self.context_queue = context_queue
-        self.origin_queue = origin_queue
+    def __init__(self):
+        self.context_queue: ModuleQueues = None
+        self.origin_queue: ModuleQueues = None
+        self._origin_queue: ModuleQueues = None
         self._data = {}
+
+    async def start(self, module_queue: ModuleQueues, init_context_data: Dict):
+        # TODO: переделать на взаимодействие через модуль менеджер
+        self._data.update(init_context_data)
+        self.origin_queue = module_queue
+        self._origin_queue = module_queue
+        self.context_queue = ModuleQueues(name=str(module_queue.input.name))
+
+        self.origin_queue.output = self.context_queue.output
+
+    async def loop(self):
+        while True:
+            await asyncio.sleep(0)
+            if not self.origin_queue.output.empty():
+                event = await self.origin_queue.output.get()
+                await self.callback(event, self._data)
 
     def update(self, data: dict):
         self._data.update(data)

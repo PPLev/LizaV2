@@ -99,8 +99,12 @@ class Core:
     async def get_module(self, module_name):
         return self.MM.get_module(module_name)
 
-    async def set_context(self, key, data):
-        pass
+    def preconfigure_context(self, event: Event):
+        async def setter(callback: callable, init_context_data: dict = {}):
+            print(event.value)
+            # TODO: подмена очереди отправки интерфейса на отправку в функцию колбека
+        return setter
 
-    async def get_context(self, key):
+    async def del_context(self, key):
         pass
+        # TODO: обратная подмена очереди на нормальную

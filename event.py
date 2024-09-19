@@ -42,7 +42,12 @@ class Event:
     def copy(self):
         return Event.from_dict(self.__dict__.copy())
 
-    async def set_context(self, init_context_data: dict):
+    async def set_context(self, callback: callable, init_context_data: dict):
+        # See Core.preconfigure_context()
+        pass
+
+    async def end_context(self):
+        # See Core.del_context()
         pass
 
 
