@@ -86,6 +86,7 @@ class Core:
                     event.out_queue = self.MM.queues[event.from_module].input
 
                 if event.event_type == EventTypes.user_command:
+                    event.set_context = self.preconfigure_context(event=event)
                     await asyncio.create_task(
                         coro=self.run_command(event=event)
                     )
@@ -106,5 +107,8 @@ class Core:
         return setter
 
     async def del_context(self, key):
-        pass
-        # TODO: обратная подмена очереди на нормальную
+        async def deleter():
+            pass
+            # TODO: обратная подмена очереди на нормальную
+
+        return deleter
