@@ -76,6 +76,7 @@ class Core:
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
+                # TODO: Переписать!!!
                 if name in self.contexts:
                     for pair in self.io_pairs:
                         if name == pair.destination:
@@ -84,7 +85,7 @@ class Core:
                     else:
                         event.out_queue = self.MM.queues[event.from_module].input
 
-
+                    continue
 
                 sender_queue = queues.output
                 if sender_queue.empty():
