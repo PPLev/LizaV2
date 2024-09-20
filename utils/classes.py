@@ -55,20 +55,20 @@ class Settings:
 
 
 class Context:
-    def __init__(self):
-        self.context_queue: ModuleQueues = None
-        self.origin_queue: ModuleQueues = None
-        self._origin_queue: ModuleQueues = None
-        self._data = {}
-
-    async def start(self, module_queue: ModuleQueues, init_context_data: Dict):
+    def __init__(self, module_queue: ModuleQueues, init_context_data: Dict):
         # TODO: переделать на взаимодействие через модуль менеджер
-        self._data.update(init_context_data)
+        self._data = init_context_data or {}
         self.origin_queue = module_queue
         self._origin_queue = module_queue
         self.context_queue = ModuleQueues(name=str(module_queue.input.name))
 
         self.origin_queue.output = self.context_queue.output
+
+    async def start(self):
+        asyncio.run_coroutine_threadsafe(
+            coro=self.loop(),
+            loop=asyncio.get_running_loop(),
+        )
 
     async def loop(self):
         while True:

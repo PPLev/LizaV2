@@ -8,6 +8,8 @@ from module_manager import ModuleManager, Intent
 from nlu import NLU
 import logging
 
+from utils.classes import Context
+
 logging.basicConfig(
     encoding="utf-8",
     format="%(asctime)s %(levelname)s %(message)s",
@@ -24,6 +26,7 @@ class Core:
         self.connection_rules = Connection.load_file(connection_config_path)
         self.io_pairs = IOPair.load_file(connection_config_path)
         self.intents: List[Intent] = None
+        self.contexts: Dict[str, Context] = None
 
         for module in self.MM.list_modules():
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
@@ -101,7 +104,14 @@ class Core:
         return self.MM.get_module(module_name)
 
     def preconfigure_context(self, event: Event):
-        async def setter(callback: callable, init_context_data: dict = {}):
+        async def setter(callback: callable, init_context_data: dict=None):
+            module_name = event.from_module
+            if module_name in self.contexts:
+                raise Exception("Duplicate context, end exist context before create new context")
+
+            self.contexts[module_name] = Context()
+
+            await self.contexts[module_name].start()
             print(event.value)
             # TODO: подмена очереди отправки интерфейса на отправку в функцию колбека
         return setter
