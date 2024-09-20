@@ -71,20 +71,20 @@ class Core:
 
     # def
 
+    def get_out(self, name):
+        for pair in self.io_pairs:
+            if name == pair.destination:
+                return self.MM.queues[pair.target].input
+        else:
+            return self.MM.queues[name].input
+
     async def run(self):
         await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
-                # TODO: Переписать!!!
                 if name in self.contexts:
-                    for pair in self.io_pairs:
-                        if name == pair.destination:
-                            event.out_queue = self.MM.queues[pair.target].input
-                            break
-                    else:
-                        event.out_queue = self.MM.queues[event.from_module].input
-
+                # TODO: Переписать!!!
                     continue
 
                 sender_queue = queues.output
@@ -93,13 +93,7 @@ class Core:
 
                 event = await sender_queue.get()
                 # logger.debug(f"event: {event.value} принят")
-
-                for pair in self.io_pairs:
-                    if name == pair.destination:
-                        event.out_queue = self.MM.queues[pair.target].input
-                        break
-                else:
-                    event.out_queue = self.MM.queues[event.from_module].input
+                event.out_queue = self.get_out(name)
 
                 if event.event_type == EventTypes.user_command:
                     event.set_context = self.preconfigure_context(event=event)
@@ -126,7 +120,8 @@ class Core:
                 module_queue=self.MM.queues[module_name],
                 callback=callback,
                 init_context_data=init_context_data,
-                end_context=await self.del_context(event=event)
+                end_context=await self.del_context(event=event),
+                output=self.get_out(module_name)
             )
 
             await self.contexts[module_name].start()

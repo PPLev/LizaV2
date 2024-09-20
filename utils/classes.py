@@ -55,12 +55,20 @@ class Settings:
 
 
 class Context:
-    def __init__(self, module_queue: ModuleQueues, init_context_data: Dict, callback: callable, end_context: callable):
+    def __init__(
+            self,
+            module_queue: ModuleQueues,
+            init_context_data: Dict,
+            callback: callable,
+            end_context: callable,
+            output: asyncio.Queue
+    ):
         # TODO: переделать на взаимодействие через модуль менеджер
         self._data = init_context_data or {}
         self.module_queue = module_queue
         self.callback = callback
         self.end_context = end_context
+        self.output = output
         self.__is_started = False
 
     async def start(self):
@@ -76,6 +84,7 @@ class Context:
             if not self.module_queue.output.empty():
                 event = await self.module_queue.output.get()
                 event.context = self._data
+                event.out_queue = self.output
                 event.end_context = self.end_context
                 await self.callback(event)
 
