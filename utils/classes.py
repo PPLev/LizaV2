@@ -55,27 +55,32 @@ class Settings:
 
 
 class Context:
-    def __init__(self, module_queue: ModuleQueues, init_context_data: Dict, callback: callable):
+    def __init__(self, module_queue: ModuleQueues, init_context_data: Dict, callback: callable, end_context: callable):
         # TODO: переделать на взаимодействие через модуль менеджер
         self._data = init_context_data or {}
         self.module_queue = module_queue
         self.callback = callback
+        self.end_context = end_context
+        self.__is_started = False
 
     async def start(self):
+        self.__is_started = True
         asyncio.run_coroutine_threadsafe(
             coro=self.loop(),
             loop=asyncio.get_running_loop(),
         )
 
     async def loop(self):
-        while True:
+        while self.__is_started:
             await asyncio.sleep(0)
             if not self.module_queue.output.empty():
                 event = await self.module_queue.output.get()
-                await self.callback(event, self._data)
+                event.context = self._data
+                event.end_context = self.end_context
+                await self.callback(event)
 
     async def end(self):
-        pass
+        self.__is_started = False
 
     def update(self, data: dict):
         self._data.update(data)

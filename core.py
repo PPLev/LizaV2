@@ -26,7 +26,7 @@ class Core:
         self.connection_rules = Connection.load_file(connection_config_path)
         self.io_pairs = IOPair.load_file(connection_config_path)
         self.intents: List[Intent] = None
-        self.contexts: Dict[str, Context] = None
+        self.contexts: Dict[str, Context] = {}
 
         for module in self.MM.list_modules():
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
@@ -69,13 +69,22 @@ class Core:
 
         logger.debug(f"command: {command_str} start")
 
+    # def
+
     async def run(self):
         await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
                 if name in self.contexts:
-                    continue
+                    for pair in self.io_pairs:
+                        if name == pair.destination:
+                            event.out_queue = self.MM.queues[pair.target].input
+                            break
+                    else:
+                        event.out_queue = self.MM.queues[event.from_module].input
+
+
 
                 sender_queue = queues.output
                 if sender_queue.empty():
@@ -113,20 +122,18 @@ class Core:
                 raise Exception("Duplicate context, end exist context before create new context")
 
             self.contexts[module_name] = Context(
-                mm=self.MM,
-                module_name=module_name,
+                module_queue=self.MM.queues[module_name],
                 callback=callback,
-                init_context_data=init_context_data
+                init_context_data=init_context_data,
+                end_context=await self.del_context(event=event)
             )
 
             await self.contexts[module_name].start()
-            print(event.value)
-            # TODO: подмена очереди отправки интерфейса на отправку в функцию колбека
         return setter
 
-    async def del_context(self, key):
+    async def del_context(self, event: Event):
         async def deleter():
-            pass
-            # TODO: обратная подмена очереди на нормальную
+            context = self.contexts.pop(event.from_module)
+            await context.end()
 
         return deleter

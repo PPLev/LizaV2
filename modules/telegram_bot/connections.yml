@@ -7,6 +7,3 @@ rules:
     before_ext: [recognize_file_vosk, [change_type, {new_type: "user_command"}]]
     purposes: [voice]
     acceptors: [core]
-
-io_pairs:
-  telegram_bot_sender: telegram_bot_acceptor
