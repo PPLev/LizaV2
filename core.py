@@ -74,6 +74,9 @@ class Core:
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
+                if name in self.contexts:
+                    continue
+
                 sender_queue = queues.output
                 if sender_queue.empty():
                     continue
@@ -109,7 +112,12 @@ class Core:
             if module_name in self.contexts:
                 raise Exception("Duplicate context, end exist context before create new context")
 
-            self.contexts[module_name] = Context()
+            self.contexts[module_name] = Context(
+                mm=self.MM,
+                module_name=module_name,
+                callback=callback,
+                init_context_data=init_context_data
+            )
 
             await self.contexts[module_name].start()
             print(event.value)
