@@ -83,6 +83,7 @@ class Module:
 
     async def init(self):
         if hasattr(self.module, "init"):
+            # TODO: Переделать
             if asyncio.iscoroutinefunction(self.module.init):
                 await self.module.init(**self.settings.as_dict)
             else:
