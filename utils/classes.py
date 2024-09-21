@@ -63,7 +63,6 @@ class Context:
             end_context: callable,
             output: asyncio.Queue
     ):
-        # TODO: переделать на взаимодействие через модуль менеджер
         self._data = init_context_data or {}
         self.module_queue = module_queue
         self.callback = callback

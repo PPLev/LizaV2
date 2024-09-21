@@ -83,11 +83,10 @@ class Module:
 
     async def init(self):
         if hasattr(self.module, "init"):
-            # TODO: Переделать
             if asyncio.iscoroutinefunction(self.module.init):
-                await self.module.init(**self.settings.as_dict)
+                await self.module.init(config=self.settings.as_dict)
             else:
-                self.module.init(**self.settings.as_dict)
+                self.module.init(config=self.settings.as_dict)
 
     async def run(self):
         if self.module.sender:
@@ -101,28 +100,6 @@ class Module:
                 loop=asyncio.get_running_loop()
             )
 
-    # async def init_senders(self):
-    #     self.senders_queues = {
-    #         i["name"]: asyncio.Queue() for i in self.module.senders
-    #     }
-    #
-    #     for sender in self.module.senders:
-    #         asyncio.run_coroutine_threadsafe(
-    #             coro=sender["function"](**self.settings.config, queue=self.senders_queues[sender["name"]]),
-    #             loop=asyncio.get_running_loop()
-    #         )
-    #
-    # async def init_acceptors(self):
-    #     self.acceptor_queues = {
-    #         i["name"]: asyncio.Queue() for i in self.module.acceptors
-    #     }
-    #
-    #     for acceptor in self.module.acceptors:
-    #         asyncio.run_coroutine_threadsafe(
-    #             coro=acceptor["function"](**self.settings.config, queue=self.acceptor_queues[acceptor["name"]]),
-    #             loop=asyncio.get_running_loop()
-    #         )
-
     def get_intents(self):
         return self.module.intents
 
@@ -131,12 +108,6 @@ class Module:
 
     def get_extensions(self):
         return self.module.extensions
-    #
-    # def get_senders_queues(self):
-    #     return self.senders_queues
-    #
-    # def get_acceptor_queues(self):
-    #     return self.acceptor_queues
 
     def save_settings(self):
         with open(f"modules/{self.name}/settings.json", "w", encoding="utf-8") as file:

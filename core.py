@@ -84,7 +84,6 @@ class Core:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
                 if name in self.contexts:
-                # TODO: Переписать!!!
                     continue
 
                 sender_queue = queues.output
