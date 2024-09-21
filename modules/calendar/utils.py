@@ -67,7 +67,12 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
 #     pass
 
 
-def init(url=None, username=None, password=None):
+def init(config):
     global calendar_data, calendar_queue
+
+    url = config["url"]
+    username = config["username"]
+    password = config["password"]
+
     calendar_queue = asyncio.Queue()
     calendar_data = CalendarData(url, username, password)

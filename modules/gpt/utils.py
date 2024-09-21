@@ -59,7 +59,13 @@ async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Eve
     return event
 
 
-async def init(openai_base: str, token: str, sys_prompt: str, model: str):
+async def init(config):
     global gpt_config
+
+    openai_base = config["openai_base"]
+    token = config["token"]
+    sys_prompt = config["sys_prompt"]
+    model = config["model"]
+
     if gpt_config is None:
         gpt_config = GPTConfig(url=openai_base, token=token, sys_prompt=sys_prompt, model=model)
