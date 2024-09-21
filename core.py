@@ -8,6 +8,8 @@ from module_manager import ModuleManager, Intent
 from nlu import NLU
 import logging
 
+from utils.classes import Context
+
 logging.basicConfig(
     encoding="utf-8",
     format="%(asctime)s %(levelname)s %(message)s",
@@ -24,6 +26,7 @@ class Core:
         self.connection_rules = Connection.load_file(connection_config_path)
         self.io_pairs = IOPair.load_file(connection_config_path)
         self.intents: List[Intent] = None
+        self.contexts: Dict[str, Context] = {}
 
         for module in self.MM.list_modules():
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
@@ -66,26 +69,33 @@ class Core:
 
         logger.debug(f"command: {command_str} start")
 
+    # def
+
+    def get_out(self, name):
+        for pair in self.io_pairs:
+            if name == pair.destination:
+                return self.MM.queues[pair.target].input
+        else:
+            return self.MM.queues[name].input
+
     async def run(self):
         await self.MM.run_queues()
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
+                if name in self.contexts:
+                    continue
+
                 sender_queue = queues.output
                 if sender_queue.empty():
                     continue
 
                 event = await sender_queue.get()
                 # logger.debug(f"event: {event.value} принят")
-
-                for pair in self.io_pairs:
-                    if name == pair.destination:
-                        event.out_queue = self.MM.queues[pair.target].input
-                        break
-                else:
-                    event.out_queue = self.MM.queues[event.from_module].input
+                event.out_queue = self.get_out(name)
 
                 if event.event_type == EventTypes.user_command:
+                    event.set_context = self.preconfigure_context(event=event)
                     await asyncio.create_task(
                         coro=self.run_command(event=event)
                     )
@@ -99,8 +109,26 @@ class Core:
     async def get_module(self, module_name):
         return self.MM.get_module(module_name)
 
-    async def set_context(self, key, data):
-        pass
+    def preconfigure_context(self, event: Event):
+        async def setter(callback: callable, init_context_data: dict=None):
+            module_name = event.from_module
+            if module_name in self.contexts:
+                raise Exception("Duplicate context, end exist context before create new context")
 
-    async def get_context(self, key):
-        pass
+            self.contexts[module_name] = Context(
+                module_queue=self.MM.queues[module_name],
+                callback=callback,
+                init_context_data=init_context_data,
+                end_context=await self.del_context(event=event),
+                output=self.get_out(module_name)
+            )
+
+            await self.contexts[module_name].start()
+        return setter
+
+    async def del_context(self, event: Event):
+        async def deleter():
+            context = self.contexts.pop(event.from_module)
+            await context.end()
+
+        return deleter

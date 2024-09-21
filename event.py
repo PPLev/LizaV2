@@ -42,6 +42,18 @@ class Event:
     def copy(self):
         return Event.from_dict(self.__dict__.copy())
 
+    # @property
+    # def context(self):
+    #     raise Exception("Context is not defined, see: https://github.com/AzimovIz/Liza/blob/dev/docs/docs/Контекст.md")
+
+    async def set_context(self, callback: callable, init_context_data: dict):
+        # See Core.preconfigure_context()
+        pass
+
+    async def end_context(self):
+        # See Core.del_context()
+        pass
+
 
 if __name__ == '__main__':
     event = Event.from_dict({"event_type": "user_command", "value": 1})
