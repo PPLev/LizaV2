@@ -65,7 +65,7 @@ class ModulesScreen(screen.Screen):
         yield widgets.Header()
         yield widgets.Footer()
 
-        modules = module_manager.get_module_names()
+        modules = module_manager.name_list
         yield widgets.Select(
             [(line, line) for line in modules],
             prompt="Выберите модуль"
