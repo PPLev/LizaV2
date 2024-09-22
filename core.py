@@ -28,14 +28,16 @@ class Core:
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
 
-        for module in self.MM.list_modules():
+    def init(self):
+        self.MM.init_modules()
+
+        for module in self.MM.name_list:
             if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
                 self.connection_rules.extend(Connection.load_file(module_conn))
                 self.io_pairs.extend(IOPair.load_file(module_conn))
 
-    def init(self):
-        self.MM.init_modules()
         self._init_ext()
+
         if len(self.MM.intents) > 1:
             self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
             self.nlu = NLU(
