@@ -190,25 +190,16 @@ class ModuleManager:
 
         return self._queues
 
-    def get_extension(self, name):
-        return self.extensions[name]
-
-    def list_modules(self) -> List[str]:
-        return self.name_list.copy()
-
-    def get_module_names(self):
-        return self.name_list.copy()
-
     def reinit_module(self, name):
         pass
 
     def get_module(self, module_name):
         pass
 
-    async def _get_event(self, name: str = None):
-        if not self.queues[name].output.empty():
-            event = await self.queues[name].output.get()
-            return event
-
-    async def _put_event(self, event, name: str = None):
-        await self.queues[name].input.put(event)
+    # async def _get_event(self, name: str = None):
+    #     if not self.queues[name].output.empty():
+    #         event = await self.queues[name].output.get()
+    #         return event
+    #
+    # async def _put_event(self, event, name: str = None):
+    #     await self.queues[name].input.put(event)
