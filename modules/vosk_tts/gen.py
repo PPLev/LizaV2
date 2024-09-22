@@ -34,12 +34,8 @@ async def say_acceptor(queue: asyncio.Queue = None, config: dict = None):
 def gen_voice(event: Event):
     global synth, speaker_id
 
-    file_name = f"modules/vosk_tts/{event.value[:20]}.wav"
+    file_name = f"modules/vosk_tts/cache/{event.value[:20]}.wav"
     synth.synth(event.value, file_name, speaker_id=speaker_id)
-
-
-
-    # play_file(file_name)
     
 
 async def init(config: dict):
