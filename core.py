@@ -58,7 +58,12 @@ class Core:
 
         command_str = event.value
         logger.debug(f"command: {command_str}")
-        intent = self.nlu.classify_text(text=command_str)
+        intent = self.nlu.classify_text(text=command_str, minimum_percent=0.7)
+
+        if not len(intent):
+            await event.reply("Команда не найдена.")
+            return
+
         logger.debug(f"intent: {intent}")
         intent_name = intent[0][0]
 
