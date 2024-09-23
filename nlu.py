@@ -2,11 +2,13 @@
 # from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.neighbors import KNeighborsClassifier
+import logging
+
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 import torch
 from collections import Counter
-
+logger = logging.getLogger(__name__)
 
 class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
@@ -51,6 +53,8 @@ class NLU:
                 self.example_vectors.append(self.embed_bert_cls(text))
                 self.intent_names.append(intent)
         self.example_vectors = np.stack(self.example_vectors)
+
+        logger.info(f'Updated {self.intents.keys()}')
 
 #
 # class NLU_SL:

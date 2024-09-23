@@ -8,7 +8,7 @@ import logging
 from event import Event
 
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,6 +57,29 @@ async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Eve
 
     event.value = await gpt_req(prompt, sys_prompt)
     return event
+
+
+async def gpt_dialog(event: Event, context: dict):
+    logger.debug(f"GPT dialog in context: {event.value}")
+    if event.value == "стоп":
+        await event.end_context()
+        return
+    prompt = context["messages"] + "\n\n\nuser:" + event.value
+    answer = await gpt_req(prompt, context["sys_prompt"])
+    context["messages"] = context["messages"] + "\n\n\nuser:" + event.value + "\n\n\nassistant" + answer
+    await event.reply(answer)
+
+
+async def context_setter(event: Event):
+    answer = await gpt_req(event.value, gpt_config.sys_prompt)
+    await event.set_context(
+        callback=gpt_dialog,
+        init_context_data={
+            "sys_prompt": gpt_config.sys_prompt,
+            "messages": "user: " + event.value + "\n\n\nassistant:" + answer
+        }
+    )
+    await event.reply(answer)
 
 
 async def init(config):

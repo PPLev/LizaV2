@@ -85,7 +85,10 @@ class Context:
                 event.context = self._data
                 event.out_queue = self.output
                 event.end_context = self.end_context
-                await self.callback(event)
+                if asyncio.iscoroutinefunction(self.callback):
+                    await self.callback(event, self._data)
+                else:
+                    self.callback(event, self._data)
 
     async def end(self):
         self.__is_started = False
