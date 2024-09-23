@@ -16,6 +16,7 @@ class GPTConfig:
     url: str
     token: str
     sys_prompt: str
+    sys_context: str
     model: str
 
 
@@ -65,17 +66,16 @@ async def gpt_dialog(event: Event, context: dict):
         await event.end_context()
         return
     prompt = context["messages"] + "\n\n\nuser:" + event.value
-    answer = await gpt_req(prompt, context["sys_prompt"])
+    answer = await gpt_req(prompt, gpt_config.sys_context)
     context["messages"] = context["messages"] + "\n\n\nuser:" + event.value + "\n\n\nassistant" + answer
     await event.reply(answer)
 
 
 async def context_setter(event: Event):
-    answer = await gpt_req(event.value, gpt_config.sys_prompt)
+    answer = await gpt_req(event.value, gpt_config.sys_context)
     await event.set_context(
         callback=gpt_dialog,
         init_context_data={
-            "sys_prompt": gpt_config.sys_prompt,
             "messages": "user: " + event.value + "\n\n\nassistant:" + answer
         }
     )
@@ -88,7 +88,14 @@ async def init(config):
     openai_base = config["openai_base"]
     token = config["token"]
     sys_prompt = config["sys_prompt"]
+    sys_context = config["sys_context"]
     model = config["model"]
 
     if gpt_config is None:
-        gpt_config = GPTConfig(url=openai_base, token=token, sys_prompt=sys_prompt, model=model)
+        gpt_config = GPTConfig(
+            url=openai_base,
+            token=token,
+            sys_prompt=sys_prompt,
+            sys_context=sys_context,
+            model=model
+        )
