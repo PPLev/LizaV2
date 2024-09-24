@@ -1,5 +1,4 @@
 ver: "1.0"
-includes: []
 rules:
   calendar_1:
     senders: []

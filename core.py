@@ -2,7 +2,7 @@ import asyncio
 import os.path
 from typing import List, Dict
 
-from connection import Connection, IOPair
+from config import config_loader, Connection, IOPair
 from event import EventTypes, Event
 from module_manager import ModuleManager, Intent
 from nlu import NLU
@@ -20,11 +20,12 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="connections/connections.yml"):
+    def __init__(self, connection_config_path="connections/config.yml"):
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load_file(connection_config_path)
-        self.io_pairs = IOPair.load_file(connection_config_path)
+        config = config_loader(connection_config_path)
+        self.connection_rules = config["rules"]
+        self.io_pairs = config["io_pairs"]
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
 
@@ -32,9 +33,10 @@ class Core:
         self.MM.init_modules()
 
         for module in self.MM.name_list:
-            if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
-                self.connection_rules.extend(Connection.load_file(module_conn))
-                self.io_pairs.extend(IOPair.load_file(module_conn))
+            if os.path.isfile(module_conn := f"modules/{module}/config.yml"):
+                module_config = config_loader(module_conn)
+                self.connection_rules.extend(module_config["rules"])
+                self.io_pairs.extend(module_config["io_pairs"])
 
         self._init_ext()
 
