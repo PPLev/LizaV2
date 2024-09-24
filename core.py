@@ -76,8 +76,6 @@ class Core:
 
         logger.debug(f"command: {command_str} start")
 
-    # def
-
     def get_out(self, name):
         for pair in self.io_pairs:
             if name == pair.destination:
