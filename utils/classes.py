@@ -1,6 +1,9 @@
 import asyncio
-from dataclasses import dataclass
-from typing import List, Dict
+import contextvars
+import inspect
+from dataclasses import dataclass, field
+from functools import partial
+from typing import List, Dict, Callable, Any, Set
 
 from event import Event
 
@@ -104,3 +107,36 @@ class Context:
 
     def __setitem__(self, key, value):
         self._data[key] = value
+
+
+# TODO: использовать для вызова функций модуля
+@dataclass
+class CallableObject:
+    callback: Callable[..., Any]
+    awaitable: bool = field(init=False)
+    params: Set[str] = field(init=False)
+    varkw: bool = field(init=False)
+
+    def __post_init__(self) -> None:
+        callback = inspect.unwrap(self.callback)
+        self.awaitable = inspect.isawaitable(callback) or inspect.iscoroutinefunction(callback)
+        spec = inspect.getfullargspec(callback)
+        self.params = {*spec.args, *spec.kwonlyargs}
+        self.varkw = spec.varkw is not None
+
+    def _prepare_kwargs(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+        if self.varkw:
+            return kwargs
+
+        return {k: kwargs[k] for k in self.params if k in kwargs}
+
+    async def call(self, *args: Any, **kwargs: Any) -> Any:
+        wrapped = partial(self.callback, *args, **self._prepare_kwargs(kwargs))
+        if self.awaitable:
+            return await wrapped()
+
+        loop = asyncio.get_event_loop()
+        context = contextvars.copy_context()
+        wrapped = partial(context.run, wrapped)
+        return await loop.run_in_executor(None, wrapped)
+
