@@ -15,7 +15,6 @@ async def reload(event: Event):  # полный перезапуск
 intents = [
     {
         "name": "reload",
-        "examples": ["перезагрузка", "перезагрузись", "выполни перезагрузку", "рестарт"],
         "function": reload
     }
 ]

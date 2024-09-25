@@ -10,7 +10,6 @@ extensions = [
 intents = [
     {
         "name": "gpt_dialog",
-        "examples": ["давай поболтаем", "общение", "режим диалога", "я хочу поговорить", "включи болталку", "разговор с гпт"],
         "function": context_setter
     }
 ]

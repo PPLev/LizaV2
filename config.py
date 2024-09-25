@@ -1,10 +1,16 @@
 import asyncio
 import os.path
-from typing import List
+from typing import List, Dict
 import yaml
 
 from event import Event
 from module_manager import ModuleManager
+
+
+class DefaultLoader:
+    @staticmethod
+    def load_dict(data: dict):
+        return data
 
 
 class Extension:
@@ -30,10 +36,7 @@ class IOPair:
     def load_dict(data: dict) -> List['IOPair']:
         pairs = []
 
-        if "io_pairs" not in data:
-            return pairs
-
-        for destination, target in data["io_pairs"].items():
+        for destination, target in data.items():
             pairs.append(IOPair(destination=destination, target=target))
 
         return pairs
@@ -45,6 +48,11 @@ class IOPair:
 
         with open(filename, 'r', encoding="utf-8") as file:
             data = yaml.safe_load(file)
+
+        if "io_pairs" not in data:
+            return []
+
+        return IOPair.load_dict(data)
 
 
 class Connection:
@@ -65,11 +73,8 @@ class Connection:
     def load_dict(data: dict) -> List['Connection']:
         connections = []
 
-        if "rules" not in data:
-            return connections
-
-        for rule in data["rules"]:
-            connections.append(Connection(name=rule, **data["rules"][rule]))
+        for rule in data:
+            connections.append(Connection(name=rule, **data[rule]))
 
         return connections
 
@@ -80,6 +85,9 @@ class Connection:
 
         with open(filename, 'r', encoding="utf-8") as file:
             data = yaml.safe_load(file)
+
+        if "rules" not in data:
+            return []
 
         return Connection.load_dict(data)
 
@@ -124,7 +132,8 @@ class Connection:
 def config_loader(filename: str):
     loaders = {
         "rules": Connection,
-        "io_pairs": IOPair
+        "io_pairs": IOPair,
+        "intent_examples": DefaultLoader
     }
     loaded_configs = {key: [] for key in loaders.keys()}
     with open(filename, 'r', encoding="utf-8") as file:
