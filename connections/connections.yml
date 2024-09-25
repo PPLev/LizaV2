@@ -8,4 +8,4 @@ rules: []
 #    acceptors: [silero]
 
 io_pairs:
-  vosk: silero
+  vosk: vosk_tts

@@ -1,0 +1,9 @@
+{
+  "version": "0.1",
+  "is_active": false,
+  "require_modules": [],
+  "config": {
+    "model_name": "vosk-model-tts-ru-0.7-multi",
+    "speaker_id": 1
+  }
+}
