@@ -11,42 +11,6 @@ from utils import SubModule, Settings, ModuleQueues
 logger = logging.getLogger(__name__)
 
 
-class Intent:
-    def __init__(
-            self,
-            name: str,
-            examples: List[str],
-            queue: str = None,
-            purpose: str = None,
-            function: callable = None
-    ):
-        self.name = name
-        self.examples = examples
-        if (function and queue) or (not function and not queue):
-            logger.warning(f"""Rule "{name}" contain error queue or function and can not to be executed""")
-            self.function = None
-            self.queue = None
-            self.purpose = None
-        else:
-            self.queue = queue
-            self.purpose = purpose
-            self.function = function
-
-    async def run(self, event: Event, mm: 'ModuleManager'):
-        if self.function:
-            if asyncio.iscoroutinefunction(self.function):
-                await self.function(event)
-            else:
-                self.function(event)
-            return
-
-        if self.queue:
-            event.event_type = EventTypes.text
-            if self.purpose:
-                event.purpose = self.purpose
-            await mm.queues[self.queue].input.put(event)
-
-
 class Module:
     def __init__(self, name):
         self.name = name

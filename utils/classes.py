@@ -1,9 +1,16 @@
 import asyncio
-from dataclasses import dataclass
-from typing import List, Dict
+import contextvars
+import inspect
+import logging
+from dataclasses import dataclass, field
+from functools import partial
+from typing import List, Dict, Callable, Any, Set
 
-from event import Event
+from event import Event, EventTypes
+#from module_manager import ModuleManager
 
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SubModule:
@@ -11,6 +18,40 @@ class SubModule:
     sender: callable
     intents: list[dict]
     extensions: List[dict]
+
+
+class Intent:
+    def __init__(
+            self,
+            name: str,
+            queue: str = None,
+            purpose: str = None,
+            function: callable = None
+    ):
+        self.name = name
+        if (function and queue) or (not function and not queue):
+            logger.warning(f"""Rule "{name}" contain error queue or function and can not to be executed""")
+            self.function = None
+            self.queue = None
+            self.purpose = None
+        else:
+            self.queue = queue
+            self.purpose = purpose
+            self.function = function
+
+    async def run(self, event: Event, mm: 'ModuleManager'):
+        if self.function:
+            if asyncio.iscoroutinefunction(self.function):
+                await self.function(event)
+            else:
+                self.function(event)
+            return
+
+        if self.queue:
+            event.event_type = EventTypes.text
+            if self.purpose:
+                event.purpose = self.purpose
+            await mm.queues[self.queue].input.put(event)
 
 
 class AsyncModuleQueue(asyncio.Queue):
@@ -85,7 +126,10 @@ class Context:
                 event.context = self._data
                 event.out_queue = self.output
                 event.end_context = self.end_context
-                await self.callback(event)
+                if asyncio.iscoroutinefunction(self.callback):
+                    await self.callback(event, self._data)
+                else:
+                    self.callback(event, self._data)
 
     async def end(self):
         self.__is_started = False
@@ -101,3 +145,36 @@ class Context:
 
     def __setitem__(self, key, value):
         self._data[key] = value
+
+
+# TODO: использовать для вызова функций модуля
+@dataclass
+class CallableObject:
+    callback: Callable[..., Any]
+    awaitable: bool = field(init=False)
+    params: Set[str] = field(init=False)
+    varkw: bool = field(init=False)
+
+    def __post_init__(self) -> None:
+        callback = inspect.unwrap(self.callback)
+        self.awaitable = inspect.isawaitable(callback) or inspect.iscoroutinefunction(callback)
+        spec = inspect.getfullargspec(callback)
+        self.params = {*spec.args, *spec.kwonlyargs}
+        self.varkw = spec.varkw is not None
+
+    def _prepare_kwargs(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+        if self.varkw:
+            return kwargs
+
+        return {k: kwargs[k] for k in self.params if k in kwargs}
+
+    async def call(self, *args: Any, **kwargs: Any) -> Any:
+        wrapped = partial(self.callback, *args, **self._prepare_kwargs(kwargs))
+        if self.awaitable:
+            return await wrapped()
+
+        loop = asyncio.get_event_loop()
+        context = contextvars.copy_context()
+        wrapped = partial(context.run, wrapped)
+        return await loop.run_in_executor(None, wrapped)
+

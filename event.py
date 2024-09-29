@@ -15,6 +15,7 @@ class Event:
         self.purpose = purpose
         self.out_queue = out_queue
         self.from_module = from_module
+        self.context = None
         for key, val in kwargs.items():
             setattr(self, key, val)
 
