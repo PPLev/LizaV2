@@ -7,4 +7,4 @@ rules: []
 #    acceptors: [silero]
 
 io_pairs:
-  vosk: vosk_tts
+  vosk: tts_vosk
