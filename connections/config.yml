@@ -1,5 +1,4 @@
 ver: "1.0"
-includes: []
 rules: []
 #  rule_1:
 #    senders: [vosk]
@@ -8,4 +7,4 @@ rules: []
 #    acceptors: [silero]
 
 io_pairs:
-  vosk: vosk_tts
+  vosk: tts_vosk

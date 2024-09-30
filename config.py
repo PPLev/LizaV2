@@ -1,10 +1,16 @@
 import asyncio
 import os.path
-from typing import List
+from typing import List, Dict
 import yaml
 
 from event import Event
 from module_manager import ModuleManager
+
+
+class DefaultLoader:
+    @staticmethod
+    def load_dict(data: dict):
+        return data
 
 
 class Extension:
@@ -27,6 +33,15 @@ class IOPair:
         self.target = target
 
     @staticmethod
+    def load_dict(data: dict) -> List['IOPair']:
+        pairs = []
+
+        for destination, target in data.items():
+            pairs.append(IOPair(destination=destination, target=target))
+
+        return pairs
+
+    @staticmethod
     def load_file(filename: str) -> List['IOPair']:
         if not os.path.isfile(filename):
             return []
@@ -34,22 +49,10 @@ class IOPair:
         with open(filename, 'r', encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
-        pairs = []
+        if "io_pairs" not in data:
+            return []
 
-        if "io_pairs" in data:
-            for destination, target in data["io_pairs"].items():
-                pairs.append(
-                    IOPair(
-                        destination=destination,
-                        target=target
-                    )
-                )
-
-        if "includes" in data:
-            for addition in data["includes"]:
-                pairs.extend(IOPair.load_file(addition))
-
-        return pairs
+        return IOPair.load_dict(data)
 
 
 class Connection:
@@ -67,6 +70,15 @@ class Connection:
         self.acceptors = acceptors
 
     @staticmethod
+    def load_dict(data: dict) -> List['Connection']:
+        connections = []
+
+        for rule in data:
+            connections.append(Connection(name=rule, **data[rule]))
+
+        return connections
+
+    @staticmethod
     def load_file(filename: str) -> List['Connection']:
         if not os.path.isfile(filename):
             return []
@@ -74,22 +86,10 @@ class Connection:
         with open(filename, 'r', encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
-        connections = []
+        if "rules" not in data:
+            return []
 
-        if "rules" in data:
-            for rule in data["rules"]:
-                connections.append(
-                    Connection(
-                        name=rule,
-                        **data["rules"][rule]
-                    )
-                )
-
-        if "includes" in data:
-            for addition in data["includes"]:
-                connections.extend(Connection.load_file(addition))
-
-        return connections
+        return Connection.load_dict(data)
 
     def init_extensions(self, mm: ModuleManager):
         init_exts: List[Extension] = []
@@ -127,6 +127,24 @@ class Connection:
 
         for acceptor in self.acceptors:
             await mm.queues[acceptor].input.put(event.copy())
+
+
+def config_loader(filename: str):
+    loaders = {
+        "rules": Connection,
+        "io_pairs": IOPair,
+        "intent_examples": DefaultLoader
+    }
+    loaded_configs = {key: [] for key in loaders.keys()}
+    with open(filename, 'r', encoding="utf-8") as file:
+        data = yaml.safe_load(file)
+        for key, data in data.items():
+            if key not in loaders:
+                continue
+
+            loaded_configs[key] = loaders[key].load_dict(data)
+
+    return loaded_configs
 
 
 if __name__ == '__main__':

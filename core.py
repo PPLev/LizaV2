@@ -2,13 +2,13 @@ import asyncio
 import os.path
 from typing import List, Dict
 
-from connection import Connection, IOPair
+from config import config_loader, Connection, IOPair
 from event import EventTypes, Event
-from module_manager import ModuleManager, Intent
+from module_manager import ModuleManager
 from nlu import NLU
 import logging
 
-from utils.classes import Context
+from utils.classes import Context, Intent
 
 logging.basicConfig(
     encoding="utf-8",
@@ -20,11 +20,13 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="connections/connections.yml"):
+    def __init__(self, connection_config_path="connections/config.yml"):
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.connection_rules = Connection.load_file(connection_config_path)
-        self.io_pairs = IOPair.load_file(connection_config_path)
+        config = config_loader(connection_config_path)
+        self.connection_rules = config["rules"]
+        self.io_pairs = config["io_pairs"]
+        self._intent_examples = {}
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
 
@@ -32,16 +34,19 @@ class Core:
         self.MM.init_modules()
 
         for module in self.MM.name_list:
-            if os.path.isfile(module_conn := f"modules/{module}/connections.yml"):
-                self.connection_rules.extend(Connection.load_file(module_conn))
-                self.io_pairs.extend(IOPair.load_file(module_conn))
+            if os.path.isfile(module_conn := f"modules/{module}/config.yml"):
+                module_config = config_loader(module_conn)
+                self.connection_rules.extend(module_config["rules"])
+                self.io_pairs.extend(module_config["io_pairs"])
+                self._intent_examples.update(module_config["intent_examples"])
 
         self._init_ext()
 
         if len(self.MM.intents) > 1:
             self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+
             self.nlu = NLU(
-                intents={intent.name: intent.examples for intent in self.intents},
+                intents={intent.name: self._intent_examples[intent.name] for intent in self.intents},
             )
 
     def _init_ext(self):
