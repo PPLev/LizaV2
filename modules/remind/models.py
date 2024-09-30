@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 
 import peewee
 
+from event import Event
+
 DATABASE = "modules/remind/remind.db"
 
 database = peewee.SqliteDatabase(DATABASE)
@@ -30,6 +32,11 @@ class Note(BaseModel):
         )
         note.save()
         return note
+
+    @staticmethod
+    async def from_event(event: Event):
+        # TODO: Достаем параметры из json в event.value и создаем запись
+        pass
 
 
 def get_notes(delta=timedelta(days=1)):
