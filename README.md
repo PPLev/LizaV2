@@ -1,4 +1,5 @@
-![llogo](https://github.com/user-attachments/assets/38513550-dd9b-4d74-b3e5-c76d26277104)
+![llogo](https://github.com/user-attachments/assets/d54d3796-8594-4918-9d2c-a4da6a8fbee7)
+
 
 Лиза - проект ассистента для автоматизации различного спектра задач.
 
