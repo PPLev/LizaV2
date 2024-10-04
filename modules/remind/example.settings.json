@@ -1,0 +1,8 @@
+{
+  "version": "0.1",
+  "is_active": true,
+  "require_modules": [],
+  "config": {
+    "send_notes": true
+  }
+}

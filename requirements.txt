@@ -13,3 +13,4 @@ num2words==0.5.13
 httpx==0.27.2
 caldav==1.3.9
 vosk-tts==0.3.56
+peewee==3.17.6

@@ -1,0 +1,4 @@
+ver: "1.0"
+# TODO: создать правило с промптом для формирования json
+intent_examples: []
+#  create_remind: [ "запомни" ]
