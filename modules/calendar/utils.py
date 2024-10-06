@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import caldav
-from .cal_funcs import create_event, CalendarData
+from .cal_funcs import create_event, CalendarData, Calendar
 from event import Event
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,8 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
 
     client = caldav.DAVClient(url=url, username=username, password=password)
     calendar = client.calendar(url=url)
+
+    # calendar2 = Calendar(url=url, username=username, password=password)
 
     while True:
         await asyncio.sleep(0)

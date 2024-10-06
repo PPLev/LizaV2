@@ -6,9 +6,7 @@ import logging
 from typing import List
 
 import caldav
-#import icalendar
 import icalendar
-#import vobject
 from event import Event
 
 logger = logging.getLogger(__name__)
@@ -59,6 +57,37 @@ class CalEvent:
     def dtend(self, value: datetime.datetime):
         self.get_component()["DTEND"] = value
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        event = icalendar.Event()
+        for key, value in data.items():
+            if key == "summary":
+                event.add("summary", value)
+            elif key == "dtstart":
+                dtstart = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
+                event.add("dtstart", dtstart)
+            elif key == "dtend":
+                dtend = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
+                event.add("dtend", dtend)
+        return cls(event)
+
+    @classmethod
+    def from_dict_in_event(cls, event: Event):
+        data = json.loads(event.value)
+        return cls.from_dict(data)
+
+    def to_dict(self) -> dict:
+        data = {}
+        component = self.get_component()
+        for line in str(component).split("\n"):
+            if "SUMMARY" not in line and "DTSTART" not in line and "DTEND" not in line:
+                key, value = line.split(":")
+                data[key.strip()] = value.strip()
+        return data
+
+    def to_ical(self) -> icalendar.Event:
+        return self._event.copy()
+
 
 class Calendar:
     def __init__(self, url: str, username: str, password: str):
@@ -72,6 +101,8 @@ class Calendar:
             summary=value,
             rrule={},
         )
+
+        #self._calendar.save_event(ical=)
 
     def get_events(
             self,
