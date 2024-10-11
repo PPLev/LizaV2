@@ -5,7 +5,7 @@ import logging
 from dataclasses import dataclass, field
 from functools import partial
 from typing import List, Dict, Callable, Any, Set
-
+import inspect
 from event import Event, EventTypes
 #from module_manager import ModuleManager
 
@@ -39,14 +39,22 @@ class Intent:
             self.purpose = purpose
             self.function = function
 
-    async def run(self, event: Event, mm: 'ModuleManager'):
-        if self.function:
-            if asyncio.iscoroutinefunction(self.function):
+    async def _run_func(self, event: Event):
+        if asyncio.iscoroutinefunction(self.function):
+            if "event" in inspect.getfullargspec(self.function).args:
                 await self.function(event)
             else:
+                await self.function()
+        else:
+            if "event" in inspect.getfullargspec(self.function).args:
                 self.function(event)
-            return
+            else:
+                self.function()
+        return
 
+    async def run(self, event: Event, mm: 'ModuleManager'):
+        if self.function:
+            await self._run_func(event)
         if self.queue:
             event.event_type = EventTypes.text
             if self.purpose:
