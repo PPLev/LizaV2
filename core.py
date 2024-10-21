@@ -102,7 +102,8 @@ class Core:
 
                 event = await sender_queue.get()
                 # logger.debug(f"event: {event.value} принят")
-                event.out_queue = self.get_out(name)
+                if event.out_queue is None:
+                    event.out_queue = self.get_out(name)
 
                 if event.event_type == EventTypes.user_command:
                     event.set_context = self.preconfigure_context(event=event)

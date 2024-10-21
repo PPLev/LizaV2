@@ -88,6 +88,9 @@ class CalEvent:
     def to_ical(self) -> icalendar.Event:
         return self._event.copy()
 
+    def __str__(self):
+        return f"{self.summary} {self.dtstart} - {self.dtend}"
+
 
 class Calendar:
     def __init__(self, url: str, username: str, password: str):
@@ -113,18 +116,18 @@ class Calendar:
         events = self._calendar.events()
         events = [CalEvent.from_caldav_event(event) for event in events]
 
-        filtered_events = []
+        filtered_events = events # []
 
-        for event in events:
-            if start <= event.dtstart < end or \
-                    start < event.dtend <= end or \
-                    start <= event.dtstart and event.dtend <= end:
-                filtered_events.append(event)
+        # for event in events:
+        #     if start <= event.dtstart < end or \
+        #             start < event.dtend <= end or \
+        #             start <= event.dtstart and event.dtend <= end:
+        #         filtered_events.append(event)
 
         return filtered_events
 
 
-async def create_event(event: Event, calendar: caldav.Calendar):
+async def create_event(event: Event, calendar: Calendar):
     logger.debug(f"Calendar get event {event.value}")
     data = json.loads(event.value)
     start = data['start']
@@ -135,11 +138,10 @@ async def create_event(event: Event, calendar: caldav.Calendar):
     else:
         end_date = start_date
     try:
-        calendar.save_event(
-            dtstart=start_date,
-            dtend=end_date,
-            summary=data["text"],
-            rrule={},
+        calendar.create_event(
+            value=data["text"],
+            start=start_date,
+            end=end_date,
         )
         await event.reply(
             value=f"""Событие "{data['text']}" на """ +

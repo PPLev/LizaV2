@@ -2,7 +2,7 @@ import asyncio
 import logging
 import caldav
 from .cal_funcs import create_event, CalendarData, Calendar
-from event import Event
+from event import Event, EventTypes
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ async def cal_sender(queue: asyncio.Queue, config: dict):
         if not calendar_queue.empty():
             event = await calendar_queue.get()
             #event.purpose = event.purpose.replace('pre_', '')
+            event.event_type = EventTypes.text
             await queue.put(event)
 
 
@@ -47,10 +48,10 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
     username = config["username"]
     password = config["password"]
 
-    client = caldav.DAVClient(url=url, username=username, password=password)
-    calendar = client.calendar(url=url)
+    # client = caldav.DAVClient(url=url, username=username, password=password)
+    # calendar = client.calendar(url=url)
 
-    # calendar2 = Calendar(url=url, username=username, password=password)
+    calendar = Calendar(url=url, username=username, password=password)
 
     while True:
         await asyncio.sleep(0)
@@ -62,6 +63,15 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
 
             elif event.purpose == "pre_add_event":
                 await calendar_queue.put(event)
+
+            elif event.purpose == "pre_get_event":
+                cal_events = [str(i) for i in calendar.get_events()]
+                event.value = f"Запрос: {event.value}\nСписок:\n{';\n'.join(cal_events)};\n"
+                await calendar_queue.put(event)
+
+            elif event.purpose == "get_event":
+                await event.reply(event.value)
+
 
 
 #
