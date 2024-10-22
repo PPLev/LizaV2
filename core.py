@@ -20,9 +20,14 @@ v = "0.1"
 
 
 class Core:
-    def __init__(self, connection_config_path="connections/config.yml"):
+    def __init__(
+            self,
+            connection_config_path="connections/config.yml",
+            minimum_nlu_percent=0.69
+    ):
         self.MM = ModuleManager()
         self.nlu: NLU = None
+        self.min_nlu_percent = minimum_nlu_percent
         config = config_loader(connection_config_path)
         self.connection_rules = config["rules"]
         self.io_pairs = config["io_pairs"]
@@ -43,7 +48,8 @@ class Core:
         self._init_ext()
 
         if len(self.MM.intents) > 1:
-            self.intents = [Intent(**i) for i in self.MM.intents] #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.intents = [Intent(**i) for i in
+                            self.MM.intents]  #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
 
             self.nlu = NLU(
                 intents={intent.name: self._intent_examples[intent.name] for intent in self.intents},
@@ -63,7 +69,7 @@ class Core:
 
         command_str = event.value
         logger.debug(f"command: {command_str}")
-        intent = self.nlu.classify_text(text=command_str, minimum_percent=0.7)
+        intent = self.nlu.classify_text(text=command_str, minimum_percent=self.min_nlu_percent)
 
         if not len(intent):
             await event.reply("Команда не найдена.")
@@ -102,7 +108,8 @@ class Core:
 
                 event = await sender_queue.get()
                 # logger.debug(f"event: {event.value} принят")
-                event.out_queue = self.get_out(name)
+                if event.out_queue is None:
+                    event.out_queue = self.get_out(name)
 
                 if event.event_type == EventTypes.user_command:
                     event.set_context = self.preconfigure_context(event=event)
@@ -120,7 +127,7 @@ class Core:
         return self.MM.get_module(module_name)
 
     def preconfigure_context(self, event: Event):
-        async def setter(callback: callable, init_context_data: dict=None):
+        async def setter(callback: callable, init_context_data: dict = None):
             module_name = event.from_module
             if module_name in self.contexts:
                 raise Exception("Duplicate context, end exist context before create new context")
@@ -134,6 +141,7 @@ class Core:
             )
 
             await self.contexts[module_name].start()
+
         return setter
 
     async def del_context(self, event: Event):
