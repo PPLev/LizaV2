@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List
@@ -39,7 +40,7 @@ async def gpt_req(prompt, sys_prompt):
         headers.update({"Authorization": f"Bearer {gpt_config.token}"})
 
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{gpt_config.url}/chat/completions", json=data, timeout=60, headers=headers)
+        response = await client.post(f"{gpt_config.url}/chat/completions", json=data, timeout=120, headers=headers)
 
     gpt_answer = response.json()['choices'][0]['message']['content']
     return gpt_answer
@@ -49,12 +50,16 @@ async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Eve
     context_items = {
         "%date%": lambda: datetime.now().strftime("%B %d, %Y"),
         "%time%": lambda: datetime.now().strftime("%H:%M:%S"),
-        "%event_value%": lambda: event.value,
         # TODO: Добавить больше переменных контекста
     }
 
     for context_item, getter in context_items.items():
         prompt = prompt.replace(context_item, getter())
+
+    event_keys = re.findall(r'%event_[^%]+%', prompt)
+    for event_key in event_keys:
+        event_attr = event_key.replace('%event_', '')[:-1]
+        prompt = prompt.replace(event_key, getattr(event, event_attr))
 
     event.value = await gpt_req(prompt, sys_prompt)
     return event
