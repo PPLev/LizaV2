@@ -20,6 +20,8 @@ class CalendarData:
 
 
 class CalEvent:
+    tz = datetime.timezone(datetime.timedelta(hours=3))
+
     def __init__(self, event: icalendar.Event):
         self._event = event
 
@@ -65,9 +67,11 @@ class CalEvent:
                 event.add("summary", value)
             elif key == "dtstart":
                 dtstart = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
+                dtstart.astimezone(cls.tz)
                 event.add("dtstart", dtstart)
             elif key == "dtend":
                 dtend = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
+                dtend.astimezone(cls.tz)
                 event.add("dtend", dtend)
         return cls(event)
 
@@ -89,7 +93,9 @@ class CalEvent:
         return self._event.copy()
 
     def __str__(self):
-        return f"{self.summary} {self.dtstart} - {self.dtend}"
+        return (f"Text: {self.summary}  "
+                f"start:{self.dtstart.strftime('%d.%m.%Y %H:%M')} "
+                f"end:{self.dtend.strftime('%d.%m.%Y %H:%M')}")
 
 
 class Calendar:
@@ -110,19 +116,16 @@ class Calendar:
     def get_events(
             self,
             start: datetime = datetime.datetime.now(),
-            end: datetime = datetime.datetime.now() + datetime.timedelta(days=1)
+            end: datetime = datetime.datetime.now() + datetime.timedelta(days=7)
     ) -> List[CalEvent]:
         pass
-        events = self._calendar.events()
-        events = [CalEvent.from_caldav_event(event) for event in events]
-
-        filtered_events = events # []
-
-        # for event in events:
-        #     if start <= event.dtstart < end or \
-        #             start < event.dtend <= end or \
-        #             start <= event.dtstart and event.dtend <= end:
-        #         filtered_events.append(event)
+        events = self._calendar.search(
+            start=start,
+            end=end,
+            event=True,
+            expand=True,
+        )
+        filtered_events = [CalEvent.from_caldav_event(event) for event in events]
 
         return filtered_events
 

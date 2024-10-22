@@ -14,7 +14,7 @@ class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
     # cointegrated/roberta-base-formality - 0.97
     # cointegrated/rubert-tiny2 - 0.86
-    # cointegrated/rubert-tiny2-sentence-compression
+    # cointegrated/rubert-tiny2-sentence-compression - 0.68
     def __init__(self, intents: dict, model_name='cointegrated/rubert-tiny2-sentence-compression'):
         self.intents = intents
         self.example_vectors = []
@@ -25,7 +25,7 @@ class NLU:
         self.update_intents()
 
     def embed_bert_cls(self, text):
-        t = self.tokenizer(text, padding=True, truncation=True, max_length=16, return_tensors='pt')
+        t = self.tokenizer(text, padding=True, truncation=True, max_length=32, return_tensors='pt')
         t = {k: v.to(self.model.device) for k, v in t.items()}
         with torch.no_grad():
             model_output = self.model(**t)
@@ -99,5 +99,5 @@ if __name__ == '__main__':
         "run_upd": ["выключи лампу", "выключи свет"],
     }
     nlu = NLU(intents=intents)
-    rez = nlu.classify_text("напомни завтра про врача")
+    rez = nlu.classify_text("когда мне будут проводить интернет")
     print(rez)

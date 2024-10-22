@@ -66,7 +66,7 @@ async def cal_acceptor(queue: asyncio.Queue, config: dict):
 
             elif event.purpose == "pre_get_event":
                 cal_events = [str(i) for i in calendar.get_events()]
-                event.value = f"Запрос: {event.value}\nСписок:\n{';\n'.join(cal_events)};\n"
+                event.cal_data = ';\n'.join(cal_events)
                 await calendar_queue.put(event)
 
             elif event.purpose == "get_event":
