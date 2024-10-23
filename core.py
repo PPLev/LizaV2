@@ -48,8 +48,7 @@ class Core:
         self._init_ext()
 
         if len(self.MM.intents) > 1:
-            self.intents = [Intent(**i) for i in
-                            self.MM.intents]  #{name: intent_data["examples"] for name, intent_data in self.MM.intents.items()}
+            self.intents = [Intent(**i) for i in self.MM.intents]
 
             self.nlu = NLU(
                 intents={intent.name: self._intent_examples[intent.name] for intent in self.intents},

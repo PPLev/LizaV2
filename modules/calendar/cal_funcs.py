@@ -20,7 +20,7 @@ class CalendarData:
 
 
 class CalEvent:
-    tz = datetime.timezone(datetime.timedelta(hours=3))
+    td = datetime.timedelta(hours=+3)
 
     def __init__(self, event: icalendar.Event):
         self._event = event
@@ -45,7 +45,7 @@ class CalEvent:
 
     @property
     def dtstart(self) -> datetime.datetime:
-        return self.get_component()["DTSTART"].dt
+        return self.get_component()["DTSTART"].dt + self.td
 
     @dtstart.setter
     def dtstart(self, value: datetime.datetime):
@@ -53,7 +53,7 @@ class CalEvent:
 
     @property
     def dtend(self) -> datetime.datetime:
-        return self.get_component()["DTEND"].dt
+        return self.get_component()["DTEND"].dt + self.td
 
     @dtend.setter
     def dtend(self, value: datetime.datetime):
@@ -67,11 +67,9 @@ class CalEvent:
                 event.add("summary", value)
             elif key == "dtstart":
                 dtstart = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
-                dtstart.astimezone(cls.tz)
                 event.add("dtstart", dtstart)
             elif key == "dtend":
                 dtend = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
-                dtend.astimezone(cls.tz)
                 event.add("dtend", dtend)
         return cls(event)
 
@@ -93,9 +91,13 @@ class CalEvent:
         return self._event.copy()
 
     def __str__(self):
-        return (f"Text: {self.summary}  "
-                f"start:{self.dtstart.strftime('%d.%m.%Y %H:%M')} "
-                f"end:{self.dtend.strftime('%d.%m.%Y %H:%M')}")
+        try:
+            return (f"Text: {self.summary}  "
+                    f"start:{self.dtstart.strftime('%d.%m.%Y %H:%M')} "
+                    f"end:{self.dtend.strftime('%d.%m.%Y %H:%M')}")
+        except Exception as e:
+            logger.error("CalEvent __str__() error.", exc_info=True)
+            return None
 
 
 class Calendar:
