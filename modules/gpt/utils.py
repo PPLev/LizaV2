@@ -39,7 +39,7 @@ async def gpt_req(prompt, sys_prompt):
     if gpt_config.token:
         headers.update({"Authorization": f"Bearer {gpt_config.token}"})
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         response = await client.post(f"{gpt_config.url}/chat/completions", json=data, timeout=120, headers=headers)
 
     gpt_answer = response.json()['choices'][0]['message']['content']

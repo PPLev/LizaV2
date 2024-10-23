@@ -88,7 +88,7 @@ class Module:
 
 class ModuleManager:
     def __init__(self):
-        self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}")]
+        self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}") and not dir_name.startswith("__")]
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
