@@ -32,6 +32,26 @@ async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
             text=bot.guest_text
         )
 
+# Тест ивентов - запросов в ядро, прим. сообщения боту "/test get_extensions"
+# @router.message(F.text.startswith("/test"))
+# async def command_handler(msg: types.Message, bot: Bot, *args, **kwargs):
+#     if msg.from_user.id == bot.admin_id:
+# 
+#         async def tester(data):
+#             await msg.reply(str(data))
+# 
+#         await bot.send_queue.put(
+#             Event(
+#                 event_type=EventTypes.core_query,
+#                 value=msg.text.replace("/test ", ""),
+#                 callback=tester
+#             )
+#         )
+#     else:
+#         await msg.reply(
+#             text=bot.guest_text
+#         )
+
 
 @router.message(F.text)
 async def msg_handler(msg: types.Message, bot: Bot, *args, **kwargs):
