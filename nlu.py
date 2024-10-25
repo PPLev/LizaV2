@@ -25,7 +25,7 @@ class NLU:
         self.update_intents()
 
     def embed_bert_cls(self, text):
-        t = self.tokenizer(text, padding=True, truncation=True, max_length=32, return_tensors='pt')
+        t = self.tokenizer(text, padding=True, truncation=True, max_length=6, return_tensors='pt')
         t = {k: v.to(self.model.device) for k, v in t.items()}
         with torch.no_grad():
             model_output = self.model(**t)
@@ -34,6 +34,10 @@ class NLU:
         return embeddings[0].cpu().numpy()
 
     def classify_text(self, text, minimum_percent=0.0):
+        intent = list(filter(lambda i: text in self.intents[i], self.intents.keys()))
+        if len(intent):
+            return [intent[0], 1.0]
+
         vector = self.embed_bert_cls(text)
         scores = np.dot(self.example_vectors, vector)
         result = Counter()
@@ -99,5 +103,5 @@ if __name__ == '__main__':
         "run_upd": ["выключи лампу", "выключи свет"],
     }
     nlu = NLU(intents=intents)
-    rez = nlu.classify_text("когда мне будут проводить интернет")
+    rez = nlu.classify_text("напомни завтра вечером покормить кошку")
     print(rez)
