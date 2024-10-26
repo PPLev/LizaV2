@@ -4,6 +4,6 @@ services:
   liza:
     build: .
     # restart: always
-    command: python main_api.py
+    command: python main.py
     volumes:
       - ./:/app/src/:rw
