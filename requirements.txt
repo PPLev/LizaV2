@@ -12,4 +12,5 @@ PyYAML==6.0.1
 num2words==0.5.13
 httpx==0.27.2
 caldav==1.3.9
-vosk-tts==0.3.56
+fastapi[standard]==0.115.0
+uvicorn==0.30.6
