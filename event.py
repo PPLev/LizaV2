@@ -6,6 +6,7 @@ from dataclasses import dataclass
 class EventTypes:
     text = "text"
     user_command = "user_command"
+    core_query = "core_query"
 
 
 class Event:
@@ -64,6 +65,42 @@ class Event:
     async def end_context(self):
         # See Core.del_context()
         pass
+
+
+class TextEvent(Event):
+    def __init__(self, value: str, purpose=None, out_queue: asyncio.Queue = None, from_module: str = None, **kwargs):
+        super().__init__(
+            EventTypes.text,
+            value=value,
+            purpose=purpose,
+            out_queue=out_queue,
+            from_module=from_module,
+            **kwargs
+        )
+
+
+class UserCommandEvent(Event):
+    def __init__(self, value: str, purpose=None, out_queue: asyncio.Queue = None, from_module: str = None, **kwargs):
+        super().__init__(
+            EventTypes.user_command,
+            value=value,
+            purpose=purpose,
+            out_queue=out_queue,
+            from_module=from_module,
+            **kwargs
+        )
+
+
+class CoreCommandEvent(Event):
+    def __init__(self, value: str, purpose=None, out_queue: asyncio.Queue = None, from_module: str = None, **kwargs):
+        super().__init__(
+            EventTypes.core_query,
+            value=value,
+            purpose=purpose,
+            out_queue=out_queue,
+            from_module=from_module,
+            **kwargs
+        )
 
 
 if __name__ == '__main__':

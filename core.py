@@ -93,6 +93,25 @@ class Core:
         else:
             return self.MM.queues[name].input
 
+    async def core_query(self, event: Event):
+        def reply(data):
+            async def wrapper():
+                if hasattr(event, "callback"):
+                    await event.callback(data)
+                else:
+                    await event.reply(data)
+            return wrapper
+
+        commands = {
+            "get_modules": reply(self.MM.name_list),
+            "get_extensions": reply(self.MM.extensions.keys()),
+            "get_intents": reply(self.nlu.intents),
+        }
+        if event.value not in commands.keys():
+            await reply(f"Query not found in [{commands.keys()}]")()
+        else:
+            await commands[event.value]()
+
     async def run(self):
         await self.MM.run_queues()
         while True:
@@ -121,6 +140,9 @@ class Core:
                         asyncio.run_coroutine_threadsafe(
                             coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
                         )
+
+                if event.event_type == EventTypes.core_query:
+                    await self.core_query(event)
 
     async def get_module(self, module_name):
         return self.MM.get_module(module_name)
