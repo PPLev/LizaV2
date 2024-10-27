@@ -86,7 +86,7 @@ class Core:
 
         logger.debug(f"command: {command_str} start")
 
-    def get_out(self, name):
+    def get_out_queues(self, name):
         for pair in self.io_pairs:
             if name == pair.destination:
                 return self.MM.queues[pair.target].input
@@ -112,6 +112,24 @@ class Core:
         else:
             await commands[event.value]()
 
+    async def run_event(self, event: Event):
+        logger.debug(f"event: {event.value} принят")
+
+        if event.event_type == EventTypes.user_command:
+            event.set_context = self.get_context_setter(event=event)
+            await asyncio.create_task(
+                coro=self.run_command(event=event)
+            )
+
+        if event.event_type == EventTypes.text:
+            for connection in self.connection_rules:
+                asyncio.run_coroutine_threadsafe(
+                    coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
+                )
+
+        if event.event_type == EventTypes.core_query:
+            await self.core_query(event)
+
     async def run(self):
         await self.MM.run_queues()
         while True:
@@ -125,29 +143,15 @@ class Core:
                     continue
 
                 event = await sender_queue.get()
-                # logger.debug(f"event: {event.value} принят")
                 if event.out_queue is None:
-                    event.out_queue = self.get_out(name)
+                    event.out_queue = self.get_out_queues(name)
 
-                if event.event_type == EventTypes.user_command:
-                    event.set_context = self.preconfigure_context(event=event)
-                    await asyncio.create_task(
-                        coro=self.run_command(event=event)
-                    )
-
-                if event.event_type == EventTypes.text:
-                    for connection in self.connection_rules:
-                        asyncio.run_coroutine_threadsafe(
-                            coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
-                        )
-
-                if event.event_type == EventTypes.core_query:
-                    await self.core_query(event)
+                await self.run_event(event)
 
     async def get_module(self, module_name):
         return self.MM.get_module(module_name)
 
-    def preconfigure_context(self, event: Event):
+    def get_context_setter(self, event: Event):
         async def setter(callback: callable, init_context_data: dict = None):
             module_name = event.from_module
             if module_name in self.contexts:
@@ -157,15 +161,15 @@ class Core:
                 module_queue=self.MM.queues[module_name],
                 callback=callback,
                 init_context_data=init_context_data,
-                end_context=await self.del_context(event=event),
-                output=self.get_out(module_name)
+                end_context=await self.get_context_deleter(event=event),
+                output=self.get_out_queues(module_name)
             )
 
             await self.contexts[module_name].start()
 
         return setter
 
-    async def del_context(self, event: Event):
+    async def get_context_deleter(self, event: Event):
         async def deleter():
             context = self.contexts.pop(event.from_module)
             await context.end()
