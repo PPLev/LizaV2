@@ -4,6 +4,8 @@ services:
   liza:
     build: .
     # restart: always
-    command: python main.py
+    command: python main_api.py
+    ports:
+      - 8056:8056
     volumes:
       - ./:/app/src/:rw
