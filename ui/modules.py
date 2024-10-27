@@ -4,6 +4,7 @@ from textual import screen, widgets, app, on, containers
 from module_manager import ModuleManager, Module
 
 module_manager = ModuleManager()
+module_manager.init_modules()
 
 
 class OptionsEdit(widgets.Static):
@@ -65,9 +66,8 @@ class ModulesScreen(screen.Screen):
         yield widgets.Header()
         yield widgets.Footer()
 
-        modules = module_manager.name_list
         yield widgets.Select(
-            [(line, line) for line in modules],
+            [(f"{module.name} - {module.version}", module.name) for module in module_manager.modules.values()],
             prompt="Выберите модуль"
         )
         self.option_layout = OptionsEdit("OptionsEdit", classes="box")
