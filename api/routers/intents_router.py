@@ -2,13 +2,13 @@ from typing import List
 
 from fastapi import APIRouter
 
-from .classes import IntentData
-from .get_core import CoreDep
+from api.classes import IntentData
+from api.get_core import CoreDep
 
-intents = APIRouter(tags=["intents"])
+intents_router = APIRouter(tags=["intents"])
 
 
-@intents.get("")
+@intents_router.get("")
 async def get_intents(core: CoreDep) -> List[IntentData]:
     data = [
         IntentData(name=name, examples=examples)

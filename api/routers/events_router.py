@@ -2,22 +2,22 @@ from typing import List
 
 from fastapi import APIRouter
 
-from .classes import EventData, AnswerData
-from .get_core import CoreDep
+from api.classes import EventData, AnswerData
+from api.get_core import CoreDep
 
-events = APIRouter(tags=["events"])
+events_router = APIRouter(tags=["events"])
 
 
-@events.get("")
+@events_router.get("")
 async def get_events(core: CoreDep, count: int = 1) -> List[EventData]:
     return {"message": "Hello World"}
 
 
-@events.post("")
+@events_router.post("")
 async def post_event(core: CoreDep, event: EventData):
     return {"message": "Hello World"}
 
 
-@events.post("/{id}/answer")
+@events_router.post("/{id}/answer")
 async def post_event(core: CoreDep, id: str, event: AnswerData):
     return {"message": "Hello World"}

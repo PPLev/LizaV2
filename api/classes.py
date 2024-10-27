@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Any
 
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel, Field
@@ -20,3 +20,13 @@ class EventData(BaseModel):
 class IntentData(BaseModel):
     name: str
     examples: List[str]
+
+
+class ModuleData(BaseModel):
+    name: str
+    version: str
+    config: dict[str, Any]
+
+class CoreData(BaseModel):
+    is_running: bool
+

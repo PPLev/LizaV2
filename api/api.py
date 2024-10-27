@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-
-from .events import events
-from .intents import intents
+from .routers import core_router, events_router, modules_router, intents_router
 
 app = FastAPI(
     title="Liza-API",
@@ -9,6 +7,8 @@ app = FastAPI(
 )
 
 
-app.include_router(prefix="/events", router=events)
-app.include_router(prefix="/intents", router=intents)
+app.include_router(prefix="/core", router=core_router)
+app.include_router(prefix="/modules", router=modules_router)
+app.include_router(prefix="/events", router=events_router)
+app.include_router(prefix="/intents", router=intents_router)
 

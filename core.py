@@ -34,6 +34,7 @@ class Core:
         self._intent_examples = {}
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
+        self._is_running = False
 
     def init(self):
         self.MM.init_modules()
@@ -131,7 +132,11 @@ class Core:
             await self.core_query(event)
 
     async def run(self):
+        if self._is_running:
+            logger.error("Error running core, core already running")
+
         await self.MM.run_queues()
+        self._is_running = True
         while True:
             await asyncio.sleep(0)
             for name, queues in self.MM.queues.items():
@@ -175,3 +180,11 @@ class Core:
             await context.end()
 
         return deleter
+
+    async def wait_for_run(self):
+        while not self._is_running:
+            await asyncio.sleep(0)
+
+    @property
+    def is_running(self):
+        return self._is_running
