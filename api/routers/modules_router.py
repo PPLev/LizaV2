@@ -23,3 +23,10 @@ async def put_module(core: CoreDep, name: str, data: ModuleData):
     module.settings.config.update(data.config)
     module.save_settings()
     return Response(status_code=200)
+
+
+@modules_router.get("/{name}/stop")
+async def stop_module(core: CoreDep, name: str):
+    module = core.MM.modules[name]
+    await module.stop()
+    return Response(status_code=200)

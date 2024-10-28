@@ -19,8 +19,8 @@ class NLU:
         self.intents = intents
         self.example_vectors = []
         self.intent_names = []
-        self.model = AutoModel.from_pretrained(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name, cache_dir="cache")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
 
         self.update_intents()
 

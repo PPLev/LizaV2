@@ -42,30 +42,39 @@ class Module:
         if not hasattr(self.module, "extensions"):
             self.module.extensions = None
 
-
         self.version = self.settings.version
+        self._event_loop: asyncio.AbstractEventLoop = None
 
     async def init(self):
+        self._event_loop = asyncio.new_event_loop()
+
         if hasattr(self.module, "init"):
-            if asyncio.iscoroutinefunction(self.module.init):
-                await self.module.init(config=self.settings.as_dict)
-            else:
-                self.module.init(config=self.settings.as_dict)
+            try:
+                if asyncio.iscoroutinefunction(self.module.init):
+                    await self.module.init(config=self.settings.as_dict)
+                else:
+                    self.module.init(config=self.settings.as_dict)
+            except Exception as e:
+                logger.error(f"Error while initializing module {self.name}: {e}", exc_info=True)
 
     async def run(self):
         if self.module.sender:
             asyncio.run_coroutine_threadsafe(
                 coro=self.module.sender(queue=self.queues.output, config=self.settings.as_dict),
-                loop=asyncio.get_running_loop()
+                loop=self._event_loop
             )
         if self.module.acceptor:
             asyncio.run_coroutine_threadsafe(
                 coro=self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict),
-                loop=asyncio.get_running_loop()
+                loop=self._event_loop
             )
 
     def get_intents(self):
         return self.module.intents
+
+    async def stop(self):
+        self._event_loop.stop()
+        # self._event_loop.close()
 
     def get_settings(self):
         return self.settings
@@ -77,9 +86,6 @@ class Module:
         with open(f"modules/{self.name}/settings.json", "w", encoding="utf-8") as file:
             json.dump(self.settings, file, ensure_ascii=False, indent=2)
 
-    def run_intent(self):
-        pass
-
     def __bool__(self):
         if hasattr(self, "settings"):
             return self.settings.is_active
@@ -88,7 +94,8 @@ class Module:
 
 class ModuleManager:
     def __init__(self):
-        self.name_list = [dir_name for dir_name in os.listdir("modules") if os.path.isdir(f"modules/{dir_name}") and not dir_name.startswith("__")]
+        self.name_list = [dir_name for dir_name in os.listdir("modules") if
+                          os.path.isdir(f"modules/{dir_name}") and not dir_name.startswith("__")]
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
@@ -107,7 +114,6 @@ class ModuleManager:
                 #self.modules[module_name] = None
                 remove_names.append(module_name)
                 continue
-
 
             if module.settings.require_modules:
                 for require_module in module.settings.require_modules:

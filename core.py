@@ -19,6 +19,10 @@ logger = logging.getLogger("root")
 v = "0.1"
 
 
+class CoreAlreadyRunningException(Exception):
+    pass
+
+
 class Core:
     def __init__(
             self,
@@ -134,6 +138,7 @@ class Core:
     async def run(self):
         if self._is_running:
             logger.error("Error running core, core already running")
+            raise CoreAlreadyRunningException
 
         await self.MM.run_queues()
         self._is_running = True
