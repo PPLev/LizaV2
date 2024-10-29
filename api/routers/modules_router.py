@@ -30,3 +30,12 @@ async def stop_module(core: CoreDep, name: str):
     module = core.MM.modules[name]
     await module.stop()
     return Response(status_code=200)
+
+# @modules_router.get("/{name}/reload")
+# async def stop_module(core: CoreDep, name: str):
+#     core.MM.reload_module(name)
+#     if core.is_running:
+#         core.MM.init_module(name)
+#         await core.MM.modules[name].run()
+#
+#     return Response(status_code=200)

@@ -36,7 +36,7 @@ class NLU:
     def classify_text(self, text, minimum_percent=0.0):
         intent = list(filter(lambda i: text in self.intents[i], self.intents.keys()))
         if len(intent):
-            return [intent[0], 1.0]
+            return [[intent[0], 1.0]]
 
         vector = self.embed_bert_cls(text)
         scores = np.dot(self.example_vectors, vector)

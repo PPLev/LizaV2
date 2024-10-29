@@ -84,10 +84,7 @@ class Core:
 
         intent: List[Intent] = list(filter(lambda intent: intent.name == intent_name, self.intents))
         if len(intent) == 1:
-            asyncio.run_coroutine_threadsafe(
-                coro=intent[0].run(event, self.MM),
-                loop=asyncio.get_running_loop()
-            )
+            await asyncio.create_task(intent[0].run(event, self.MM))
 
         logger.debug(f"command: {command_str} start")
 

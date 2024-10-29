@@ -2,8 +2,10 @@ import asyncio
 import json
 import logging
 import os
-from typing import List, Dict
+import sys
+from typing import Dict
 import shutil
+from importlib import reload, import_module, invalidate_caches
 from utils import SubModule, Settings, ModuleQueues
 
 logger = logging.getLogger(__name__)
@@ -21,6 +23,7 @@ def return_blank_list_if_not_active(func: callable) -> callable:
 class Module:
     def __init__(self, name, mm: 'ModuleManager'):
         self.name = name
+        self.module: SubModule = None
         self.queues: ModuleQueues = ModuleQueues(name=self.name)
         if not os.path.isfile(f"modules/{self.name}/settings.json"):
             if os.path.isfile(f"modules/{self.name}/example.settings.json"):
@@ -49,7 +52,12 @@ class Module:
             logger.debug(f"Модуль {self.name} выключен")
 
         try:
-            self.module: SubModule = getattr(__import__(f"modules.{self.name}.main"), self.name).main
+            if self.name in mm.modules.keys():
+                invalidate_caches()
+                self.module = reload(module=mm.modules[self.name].module)
+            else:
+                self.module: SubModule = import_module(f"modules.{self.name}.main")
+
         except ModuleNotFoundError:
             self.settings.is_active = False
             logger.error(
@@ -68,14 +76,14 @@ class Module:
             self.module.extensions = []
 
         self.version = self.settings.version
-        self._mm_ = mm
-        self._event_loop: asyncio.AbstractEventLoop = None
+        self._mm = mm
+
+        self.acceptor_task: asyncio.Task = None
+        self.sender_task: asyncio.Task = None
 
     async def init(self):
         if not self.settings.is_active:
             return
-
-        self._event_loop = asyncio.new_event_loop()
 
         if hasattr(self.module, "init"):
             try:
@@ -87,24 +95,25 @@ class Module:
                 logger.error(f"Error func init() in module {self.name}: {e}", exc_info=True)
 
     async def run(self):
+        if not self.settings.is_active:
+            return
+
         if self.module.sender:
-            asyncio.run_coroutine_threadsafe(
-                coro=self.module.sender(queue=self.queues.output, config=self.settings.as_dict),
-                loop=self._event_loop
+            self.sender_task = asyncio.create_task(
+                self.module.sender(queue=self.queues.output, config=self.settings.as_dict)
             )
         if self.module.acceptor:
-            asyncio.run_coroutine_threadsafe(
-                coro=self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict),
-                loop=self._event_loop
+            self.acceptor_task = asyncio.create_task(
+                self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict)
             )
 
     @return_blank_list_if_not_active
     def get_intents(self):
         return self.module.intents
 
-    async def stop(self):
-        self._event_loop.stop()
-        # self._event_loop.close()
+    def stop(self):
+        self.acceptor_task.cancel()
+        self.sender_task.cancel()
 
     def get_settings(self):
         return self.settings
@@ -132,17 +141,18 @@ class ModuleManager:
         self.extensions = {}
         self._queues = None
 
-    def init_module(self, module_name):
-        if module_name in self.modules.keys():
-            return
+    def _init_module(self, module_name: str):
         module = Module(name=module_name, mm=self)
         asyncio.gather(module.init())
+        return module
+
+    def init_module(self, module_name):
+        module = self._init_module(module_name)
         # future = asyncio.run_coroutine_threadsafe(module.init(), asyncio.get_event_loop())
         # future.result()
-        # await module.init()
         self.modules[module_name] = module
         if not module.settings.is_active:
-            logger.debug(f"модуль НЕ {module_name} инициализирован")
+            logger.debug(f"модуль {module_name} НЕ инициализирован")
             return
 
         if module.settings.require_modules:
@@ -152,8 +162,8 @@ class ModuleManager:
                     logger.error(f"Required module '{require_module_name}' for module {module_name} not found")
                     continue
 
-                #self.init_module(require_module_name)
-                self.init_module(require_module_name)
+                if require_module_name not in self.modules.keys():
+                    self.init_module(require_module_name)
 
                 if not self.modules[require_module_name].settings.is_active:
                     module.settings.is_active = False
@@ -170,7 +180,8 @@ class ModuleManager:
     def init_modules(self):
         logger.debug("инициализация модулей...")
         for module_name in self.name_list:
-            self.init_module(module_name)
+            if module_name not in self.modules.keys():
+                self.init_module(module_name)
 
         logger.debug("модули инициализированы")
 
@@ -195,8 +206,9 @@ class ModuleManager:
 
         return self._queues
 
-    def reinit_module(self, name):
-        pass
+    def reload_module(self, name):
+        self.modules[name].stop()
+        self.init_module(name)
 
     def get_module(self, module_name):
         pass
