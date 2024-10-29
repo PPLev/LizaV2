@@ -3,6 +3,8 @@ from typing import List, Union, Any
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel, Field
 
+from event import Event
+
 
 class AnswerData(BaseModel):
     value: str
@@ -16,6 +18,12 @@ class EventData(BaseModel):
     from_module: str
     other_keys: dict | None = None
 
+    @staticmethod
+    def from_event(event: Event):
+        data = event.to_dict()
+        event_data = EventData(id="0", **data)
+        return event_data
+
 
 class IntentData(BaseModel):
     name: str
@@ -27,6 +35,6 @@ class ModuleData(BaseModel):
     version: str
     config: dict[str, Any]
 
+
 class CoreData(BaseModel):
     is_running: bool
-

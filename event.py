@@ -31,6 +31,15 @@ class Event:
         )
         return event
 
+    def to_dict(self):
+        data = {
+            "event_type": self.event_type,
+            "value": self.value,
+            "purpose": self.purpose,
+            "from_module": self.from_module
+        }
+        return data
+
     async def reply(self, value, new_purpose=None):
         if self.out_queue:
             await self.out_queue.put(
@@ -59,11 +68,11 @@ class Event:
     #     raise Exception("Context is not defined, see: https://github.com/AzimovIz/Liza/blob/dev/docs/docs/Контекст.md")
 
     async def set_context(self, callback: callable, init_context_data: dict):
-        # See Core.preconfigure_context()
+        # See Core.get_context_setter()
         pass
 
     async def end_context(self):
-        # See Core.del_context()
+        # See Core.get_context_deleter()
         pass
 
 
