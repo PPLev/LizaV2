@@ -13,6 +13,25 @@ def to_waw(event: Event):
     pass
 
 
+is_say_allow = True
+
+
+def canceler():
+    global is_say_allow
+    is_say_allow = False
+
+
+async def say(audio):
+    global is_say_allow
+    for chunk in range(audio, len(audio), 4000):
+        await asyncio.sleep(0)
+        if not is_say_allow:
+            break
+        sounddevice.play(chunk, samplerate=24000)
+        sounddevice.wait()
+
+    is_say_allow = True
+
 async def say_acceptor(
         queue: asyncio.Queue = None,
         config: dict = None,
@@ -50,6 +69,5 @@ async def say_acceptor(
                                            sample_rate=24000)
 
             logger.info(f"Начата озвучка для '{say_str}'")
-            sounddevice.play(audio, samplerate=24000)
-            sounddevice.wait()
+            await say(audio=audio)
             logger.info(f"Озвучка завершена для '{say_str}'")

@@ -1,11 +1,16 @@
-from .gen import init, say_acceptor, gen_voice
+from .gen import init, gen_acceptor, gen_voice, canceler
 
 
-acceptor = say_acceptor
+acceptor = gen_acceptor
 #
 # sender = run_vosk
 #
-# intents = []
+intents = [
+    {
+        "name": "stop_gen_voice_vosk",
+        "function": canceler
+    }
+]
 #
 extensions = [
     {

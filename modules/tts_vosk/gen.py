@@ -15,25 +15,39 @@ synth: Synth = None
 speaker_id: int = None
 
 
-# model = Model(model_name="vosk-model-tts-ru-0.7-multi")
-# synth = Synth(model)
+is_say_allow = True
 
 
-async def say_acceptor(queue: asyncio.Queue = None, config: dict = None):
+def canceler():
+    global is_say_allow
+    is_say_allow = False
+
+
+async def say(audio):
+    global is_say_allow
+    for chunk in range(audio, len(audio), 4000):
+        await asyncio.sleep(0)
+        if not is_say_allow:
+            break
+        sounddevice.play(chunk, samplerate=24000)
+        sounddevice.wait()
+
+    is_say_allow = True
+
+
+async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
     global synth, speaker_id
     while True:
-        while True:
-            await asyncio.sleep(0)
+        await asyncio.sleep(0)
 
-            if not queue.empty():
-                event: Event = await queue.get()
-                audio = synth.synth_audio(
-                    text=event.value,
-                    speaker_id=speaker_id
-                )
+        if not queue.empty():
+            event: Event = await queue.get()
+            audio = synth.synth_audio(
+                text=event.value,
+                speaker_id=speaker_id
+            )
 
-                sounddevice.play(audio, samplerate=24000)
-                sounddevice.wait()
+            await say(audio=audio)
 
 
 def gen_voice(event: Event):
