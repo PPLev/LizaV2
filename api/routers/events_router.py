@@ -22,9 +22,9 @@ events_router = APIRouter(tags=["events"])
 
 
 @events_router.post("")
-async def post_event(core: CoreDep, queues_mng: HttpQueuesDep, event: EventData) -> AnswerData:
+async def post_event(core: CoreDep, queues_mng: HttpQueuesDep, event: EventData, timeout: int = 60) -> AnswerData:
     event_ = Event.from_dict(event.model_dump())
-    answer_queue = queues_mng.new()
+    answer_queue = queues_mng.new(timeout=timeout)
     event_.out_queue = answer_queue.queue
     await core.run_event(event_)
 

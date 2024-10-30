@@ -23,8 +23,8 @@ class AnswerQueues:
     def __init__(self):
         self.queues: List[AnswerQueue] = []
 
-    def new(self) -> AnswerQueue:
-        self.queues.append(AnswerQueue())
+    def new(self, timeout=60) -> AnswerQueue:
+        self.queues.append(AnswerQueue(timeout=timeout))
         return self.queues[-1]
 
     async def get_events(self, id: uuid.uuid4, count=1) -> List[Event]:
