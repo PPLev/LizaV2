@@ -1,13 +1,12 @@
+import uuid
 from typing import List, Union, Any
-
-from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel, Field
 
 from event import Event
 
 
 class AnswerData(BaseModel):
-    value: str
+    answer_id: uuid.UUID
 
 
 class EventData(BaseModel):
@@ -15,7 +14,7 @@ class EventData(BaseModel):
     event_type: str
     value: str
     purpose: str | None = None
-    from_module: str
+    from_module: str | None = None
     other_keys: dict | None = None
 
     @staticmethod

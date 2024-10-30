@@ -2,7 +2,7 @@ import asyncio
 
 from fastapi import APIRouter, Response
 
-from api.get_core import CoreDep
+from api.depends import CoreDep
 from api.classes import CoreData
 from event import Event, EventTypes
 

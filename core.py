@@ -119,18 +119,23 @@ class Core:
 
         if event.event_type == EventTypes.user_command:
             event.set_context = self.get_context_setter(event=event)
-            await asyncio.create_task(
-                coro=self.run_command(event=event)
+            asyncio.run_coroutine_threadsafe(
+                coro=self.run_command(event=event),
+                loop=asyncio.get_running_loop()
             )
 
-        if event.event_type == EventTypes.text:
+        elif event.event_type == EventTypes.text:
             for connection in self.connection_rules:
                 asyncio.run_coroutine_threadsafe(
-                    coro=connection.run_event(event=event.copy(), mm=self.MM), loop=asyncio.get_event_loop()
+                    coro=connection.run_event(event=event.copy(), mm=self.MM),
+                    loop=asyncio.get_running_loop()
                 )
 
-        if event.event_type == EventTypes.core_query:
+        elif event.event_type == EventTypes.core_query:
             await self.core_query(event)
+
+        else:
+            logger.warning(f"Unknown event type: {event.event_type}")
 
     async def run(self):
         if self._is_running:

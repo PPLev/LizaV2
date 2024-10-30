@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Response
 
 from api.classes import ModuleData
-from api.get_core import CoreDep
+from api.depends import CoreDep
 
 modules_router = APIRouter(tags=["module"])
 

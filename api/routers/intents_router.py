@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter
 
 from api.classes import IntentData
-from api.get_core import CoreDep
+from api.depends import CoreDep
 
 intents_router = APIRouter(tags=["intents"])
 
