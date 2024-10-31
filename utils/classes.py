@@ -1,16 +1,17 @@
 import asyncio
 import contextvars
-import inspect
 import logging
 from dataclasses import dataclass, field
 from functools import partial
 from typing import List, Dict, Callable, Any, Set
 import inspect
 from event import Event, EventTypes
+
 #from module_manager import ModuleManager
 
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class SubModule:
@@ -185,4 +186,3 @@ class CallableObject:
         context = contextvars.copy_context()
         wrapped = partial(context.run, wrapped)
         return await loop.run_in_executor(None, wrapped)
-
