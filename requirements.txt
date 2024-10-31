@@ -18,3 +18,4 @@ vosk-tts==0.3.56
 pydantic==2.7.4
 icalendar==5.0.13
 tqdm==4.66.4
+ics==0.7.2
