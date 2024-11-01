@@ -139,7 +139,7 @@ class ModuleManager:
         self.modules: Dict[str, Module] = {}
         self.intents = []
         self.extensions = {}
-        self._queues = None
+        self._no_modules_queues = {}
 
     def _init_module(self, module_name: str):
         module = Module(name=module_name, mm=self)
@@ -185,7 +185,11 @@ class ModuleManager:
 
         logger.debug("модули инициализированы")
 
-    async def run_queues(self):
+        if all([module.settings.is_active for module in self.modules.values()]):
+            logger.info("Все модули выключены, настройте необходимые модули и повторите запуск")
+            sys.exit(1)
+
+    async def run_modules(self):
         for module in self.modules.values():
             if not module.settings.is_active:
                 continue
@@ -197,14 +201,20 @@ class ModuleManager:
 
         logger.debug("очереди созданы")
 
+
     @property
     def queues(self):
-        if not self._queues:
-            self._queues = {}
-            for module_name in self.name_list:
-                self._queues[module_name] = self.modules[module_name].queues
+        data = {}
+        for module_name in self.name_list:
+            data[module_name] = self.modules[module_name].queues
 
-        return self._queues
+        data.update(self._no_modules_queues)
+
+        return data
+
+    def add_named_queues(self, queue_name: str):
+        if queue_name not in self._no_modules_queues.keys():
+            self._no_modules_queues[queue_name] = ModuleQueues(name=queue_name)
 
     def reload_module(self, name):
         self.modules[name].stop()

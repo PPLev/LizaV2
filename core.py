@@ -142,7 +142,9 @@ class Core:
             logger.error("Error running core, core already running")
             raise CoreAlreadyRunningException
 
-        await self.MM.run_queues()
+        self.MM.add_named_queues("core")
+        await self.MM.run_modules()
+
         self._is_running = True
         while True:
             await asyncio.sleep(0)
