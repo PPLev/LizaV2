@@ -28,7 +28,7 @@ class Core:
             self,
             connection_config_path="connections/config.yml",
             minimum_nlu_percent=0.69,
-            forward_core_events=False,
+            forward_core_events=True,
     ):
         self.MM = ModuleManager()
         self.nlu: NLU = None
