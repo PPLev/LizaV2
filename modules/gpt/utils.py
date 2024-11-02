@@ -50,6 +50,7 @@ async def ask_gpt(event: Event, prompt: str = "", sys_prompt: str = None) -> Eve
     context_items = {
         "%date%": lambda: datetime.now().strftime("%B %d, %Y"),
         "%time%": lambda: datetime.now().strftime("%H:%M:%S"),
+        "%week_day%": lambda: datetime.now().strftime("%A"),
         # TODO: Добавить больше переменных контекста
     }
 

@@ -3,7 +3,7 @@ includes: []
 
 rules:
   rule_1:
-    senders: [telegram_bot_sender]
+    senders: [telegram_bot]
     before_ext: [recognize_file_vosk, [change_type, {new_type: "user_command"}]]
     purposes: [voice]
     acceptors: [core]

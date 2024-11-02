@@ -27,7 +27,8 @@ class Core:
     def __init__(
             self,
             connection_config_path="connections/config.yml",
-            minimum_nlu_percent=0.69
+            minimum_nlu_percent=0.69,
+            forward_core_events=False,
     ):
         self.MM = ModuleManager()
         self.nlu: NLU = None
@@ -39,6 +40,7 @@ class Core:
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
+        self.forward_core_events = forward_core_events
 
     def init(self):
         self.MM.init_modules()
@@ -115,7 +117,7 @@ class Core:
             await commands[event.value]()
 
     async def run_event(self, event: Event):
-        logger.debug(f"event: {event.value} принят")
+        logger.debug(f'event: "{event.value}" принят')
 
         if event.event_type == EventTypes.user_command:
             event.set_context = self.get_context_setter(event=event)
@@ -148,6 +150,13 @@ class Core:
         self._is_running = True
         while True:
             await asyncio.sleep(0)
+
+            if self.forward_core_events:
+                if not self.MM.queues["core"].input.empty():
+                    while not self.MM.queues["core"].input.empty():
+                        event = await self.MM.queues["core"].input.get()
+                        await self.MM.queues["core"].output.put(event)
+
             for name, queues in self.MM.queues.items():
                 if name in self.contexts:
                     continue

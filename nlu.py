@@ -25,7 +25,7 @@ class NLU:
         self.update_intents()
 
     def embed_bert_cls(self, text):
-        t = self.tokenizer(text, padding=True, truncation=True, max_length=6, return_tensors='pt')
+        t = self.tokenizer(text, padding=True, truncation=True, max_length=12, return_tensors='pt')
         t = {k: v.to(self.model.device) for k, v in t.items()}
         with torch.no_grad():
             model_output = self.model(**t)
