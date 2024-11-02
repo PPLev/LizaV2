@@ -1,5 +1,3 @@
-import json
-
 from num2words import num2words
 
 from event import Event, EventTypes

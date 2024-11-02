@@ -2,10 +2,10 @@ version: '3.7'
 
 services:
   liza:
-    build: .
+    build: src
     # restart: always
     command: python main_api.py
     ports:
       - 8056:8056
     volumes:
-      - ./:/app/src/:rw
+      - ./src:/app/src/:rw

@@ -7,7 +7,6 @@ from typing import List
 
 import caldav
 import ics
-import icalendar
 from event import Event
 
 logger = logging.getLogger(__name__)
