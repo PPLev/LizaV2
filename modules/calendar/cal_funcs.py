@@ -6,6 +6,7 @@ import logging
 from typing import List
 
 import caldav
+import ics
 import icalendar
 from event import Event
 
@@ -19,88 +20,15 @@ class CalendarData:
     password: str
 
 
-class CalEvent:
-    td = datetime.timedelta(hours=+3)
-
-    def __init__(self, event: icalendar.Event):
-        self._event = event
-
-    @staticmethod
-    def from_caldav_event(event: caldav.Event):
-        cal = icalendar.Event.from_ical(event.data)
-        return CalEvent(cal)
-
-    def get_component(self):
-        for component in self._event.subcomponents:
-            if "SUMMARY" in component:
-                return component
-
-    @property
-    def summary(self) -> str:
-        return self.get_component()["SUMMARY"].to_ical().decode()
-
-    @summary.setter
-    def summary(self, value: str):
-        self.get_component()["SUMMARY"] = icalendar.vText(value)
-
-    @property
-    def dtstart(self) -> datetime.datetime:
-        return self.get_component()["DTSTART"].dt + self.td
-
-    @dtstart.setter
-    def dtstart(self, value: datetime.datetime):
-        self.get_component()["DTSTART"] = value
-
-    @property
-    def dtend(self) -> datetime.datetime:
-        return self.get_component()["DTEND"].dt + self.td
-
-    @dtend.setter
-    def dtend(self, value: datetime.datetime):
-        self.get_component()["DTEND"] = value
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        event = icalendar.Event()
-        for key, value in data.items():
-            if key == "summary":
-                event.add("summary", value)
-            elif key == "dtstart":
-                dtstart = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
-                event.add("dtstart", dtstart)
-            elif key == "dtend":
-                dtend = datetime.datetime.strptime(value, "%Y%m%dT%H%M%S")
-                event.add("dtend", dtend)
-        return cls(event)
-
-    @classmethod
-    def from_dict_in_event(cls, event: Event):
-        data = json.loads(event.value)
-        return cls.from_dict(data)
-
-    def to_dict(self) -> dict:
-        data = {}
-        component = self.get_component()
-        for line in str(component).split("\n"):
-            if "SUMMARY" not in line and "DTSTART" not in line and "DTEND" not in line:
-                key, value = line.split(":")
-                data[key.strip()] = value.strip()
-        return data
-
-    def to_ical(self) -> icalendar.Event:
-        return self._event.copy()
-
-    def __str__(self):
-        try:
-            return (f"Text: {self.summary}  "
-                    f"start:{self.dtstart.strftime('%d.%m.%Y %H:%M')} "
-                    f"end:{self.dtend.strftime('%d.%m.%Y %H:%M')}")
-        except Exception as e:
-            logger.error("CalEvent __str__() error.", exc_info=True)
-            return None
+def formated(event: ics.Event):
+    return (f"Text: {event.name}  "
+            f"start:{event.begin.strftime('%d.%m.%Y %H:%M')} "
+            f"end:{event.end.strftime('%d.%m.%Y %H:%M')}")
 
 
 class Calendar:
+    tzinfo = datetime.datetime.now().tzinfo
+
     def __init__(self, url: str, username: str, password: str):
         self._client = caldav.DAVClient(url=url, username=username, password=password)
         self._calendar: caldav.Calendar = self._client.calendar(url=url)
@@ -119,15 +47,21 @@ class Calendar:
             self,
             start: datetime = datetime.datetime.now(),
             end: datetime = datetime.datetime.now() + datetime.timedelta(days=7)
-    ) -> List[CalEvent]:
-        pass
+    ) -> List[ics.Event]:
         events = self._calendar.search(
             start=start,
             end=end,
             event=True,
             expand=True,
         )
-        filtered_events = [CalEvent.from_caldav_event(event) for event in events]
+        filtered_events = []
+        for event in events:
+            ics_cal = ics.Calendar(event.data)
+            ics_event = list(ics_cal.events)[0]
+            ics_event.begin = ics_event.begin.astimezone(tz=self.tzinfo)
+            ics_event.end = ics_event.end.astimezone(tz=self.tzinfo)
+            ics_event.formated = formated(ics_event)
+            filtered_events.append(ics_event)
 
         return filtered_events
 
@@ -169,11 +103,9 @@ if __name__ == '__main__':
     username = config["username"]
     password = config["password"]
 
-    client = caldav.DAVClient(url=url, username=username, password=password)
-    calendar = client.calendar(url=url)
+    calendar = Calendar(url=url, username=username, password=password)
 
-    events = calendar.events()
+    events = calendar.get_events()
 
     for event in events:
-        my_event = CalEvent.from_caldav_event(event)
-        print(my_event.summary)
+        print(event.name)
