@@ -107,6 +107,8 @@ class Module:
                 self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict)
             )
 
+        self.queues.set_active()
+
     @return_blank_list_if_not_active
     def get_intents(self):
         return self.module.intents

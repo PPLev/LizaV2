@@ -1,10 +1,13 @@
 import asyncio
+import logging
 import os.path
 from typing import List, Dict
 import yaml
 
 from event import Event
 from module_manager import ModuleManager
+
+logger = logging.getLogger("root")
 
 
 class DefaultLoader:
@@ -126,6 +129,9 @@ class Connection:
             event = await extension.apply(event)
 
         for acceptor in self.acceptors:
+            if not mm.modules[acceptor].settings.is_active:
+                logger.error(f"Ошибка правила {self.name} модуль {acceptor} выключен")
+                continue
             await mm.queues[acceptor].input.put(event.copy())
 
 

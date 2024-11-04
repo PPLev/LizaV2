@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os.path
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -10,29 +11,21 @@ from vosk_tts import Model, Synth
 
 from event import Event
 
+logger = logging.getLogger("root")
+
 model: Model = None
 synth: Synth = None
 speaker_id: int = None
 
 
-is_say_allow = True
-
-
 def canceler():
-    global is_say_allow
-    is_say_allow = False
+    sounddevice.stop()
 
 
 async def say(audio):
-    global is_say_allow
-    for chunk in range(audio, len(audio), 4000):
+    sounddevice.play(audio, samplerate=24000)
+    while sounddevice.get_status() == "play()":
         await asyncio.sleep(0)
-        if not is_say_allow:
-            break
-        sounddevice.play(chunk, samplerate=24000)
-        sounddevice.wait()
-
-    is_say_allow = True
 
 
 async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
@@ -42,12 +35,14 @@ async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
 
         if not queue.empty():
             event: Event = await queue.get()
-            audio = synth.synth_audio(
-                text=event.value,
-                speaker_id=speaker_id
-            )
-
-            await say(audio=audio)
+            try:
+                audio = synth.synth_audio(
+                    text=event.value,
+                    speaker_id=speaker_id
+                )
+                await say(audio=audio)
+            except Exception as e:
+                logger.error(f"Ошибка озвучки для {event.value}", exc_info=True)
 
 
 def gen_voice(event: Event):
@@ -60,6 +55,7 @@ def gen_voice(event: Event):
 def download_model(model_name):
     MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
     file_name = f"modules/tts_vosk/{model_name}.zip"
+
     def download_progress_hook(t):
         last_b = [0]
 

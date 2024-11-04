@@ -13,24 +13,15 @@ def to_waw(event: Event):
     pass
 
 
-is_say_allow = True
-
-
 def canceler():
-    global is_say_allow
-    is_say_allow = False
+    sounddevice.stop()
 
 
 async def say(audio):
-    global is_say_allow
-    for chunk in range(audio, len(audio), 4000):
+    sounddevice.play(audio, samplerate=24000)
+    while sounddevice.get_status() == "play()":
         await asyncio.sleep(0)
-        if not is_say_allow:
-            break
-        sounddevice.play(chunk, samplerate=24000)
-        sounddevice.wait()
 
-    is_say_allow = True
 
 async def say_acceptor(
         queue: asyncio.Queue = None,
