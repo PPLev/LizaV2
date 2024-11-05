@@ -1,9 +1,9 @@
-from .gen import init, gen_acceptor, gen_voice, canceler
+from .gen import init, gen_acceptor, gen_voice, canceler, run_sender
 
 
 acceptor = gen_acceptor
 #
-# sender = run_vosk
+sender = run_sender
 #
 intents = [
     {

@@ -9,13 +9,14 @@ import sounddevice
 from tqdm import tqdm
 from vosk_tts import Model, Synth
 
-from event import Event
+from event import Event, EventTypes
 
 logger = logging.getLogger("root")
 
 model: Model = None
 synth: Synth = None
 speaker_id: int = None
+output_q: asyncio.Queue = None
 
 
 def canceler():
@@ -23,9 +24,29 @@ def canceler():
 
 
 async def say(audio):
+    global output_q
+    await output_q.put(
+        Event(
+            event_type=EventTypes.text,
+            value=audio,
+            purpose="set_voice_buffer"
+        )
+    )
     sounddevice.play(audio, samplerate=24000)
     while sounddevice.get_status() == "play()":
         await asyncio.sleep(0)
+
+    await output_q.put(
+        Event(
+            event_type=EventTypes.text,
+            purpose="unset_voice_buffer"
+        )
+    )
+
+
+async def run_sender(queue: asyncio.Queue = None, config: dict = None):
+    global output_q
+    output_q = queue
 
 
 async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
