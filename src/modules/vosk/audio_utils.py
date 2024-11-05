@@ -19,10 +19,10 @@ def filter_voice_gen(raw, generated):
         lag = find_offset(raw, generated)
 
         if lag > 0:
-            print(lag)
+            logger.info(f"Filtering voice gen, lag = {lag}")
             raw = raw - generated[lag:lag+len(raw)]
     except Exception as e:
         logger.error("filter error: ", exc_info=True)
 
-    logger.info(f"222 Filtering voice gen, input len = {len(raw)}, {raw}")
+    logger.info(f"Filtering voice gen, output len = {len(raw)}, {raw}")
     return raw
