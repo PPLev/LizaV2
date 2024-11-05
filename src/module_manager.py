@@ -102,12 +102,13 @@ class Module:
             self.sender_task = asyncio.create_task(
                 self.module.sender(queue=self.queues.output, config=self.settings.as_dict)
             )
+            self.queues.output.is_active = True
+
         if self.module.acceptor:
             self.acceptor_task = asyncio.create_task(
                 self.module.acceptor(queue=self.queues.input, config=self.settings.as_dict)
             )
-
-        self.queues.set_active()
+            self.queues.input.is_active = True
 
     @return_blank_list_if_not_active
     def get_intents(self):

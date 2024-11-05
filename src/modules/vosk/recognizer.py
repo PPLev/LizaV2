@@ -3,6 +3,7 @@ import json
 import os
 import wave
 
+import numpy as np
 import soundfile
 import vosk
 import pyaudio
@@ -58,9 +59,11 @@ async def vosk_acceptor(
 
             if event.purpose == "set_voice_buffer":
                 buffer = event.value
+                logger.debug("vosk voice buffer set!!!")
 
-            if event.purpose != "unset_voice_buffer":
+            if event.purpose == "unset_voice_buffer":
                 buffer = None
+                logger.debug("vosk voice buffer unset!!!")
 
 
 async def run_vosk(
@@ -106,7 +109,12 @@ async def run_vosk(
         await asyncio.sleep(0)
 
         data = stream.read(8000)
-        data = filter_voice_gen(data, buffer)
+
+        # TODO: Доработать фильтрацию, работает неправильно
+        # if buffer is not None:
+        #     data: np.ndarray = filter_voice_gen(np.frombuffer(data, dtype=np.int16), buffer)
+        #     data: bytes = data.tobytes()
+
         if rec.AcceptWaveform(data):
             recognized_data = rec.Result()
             recognized_data = json.loads(recognized_data)

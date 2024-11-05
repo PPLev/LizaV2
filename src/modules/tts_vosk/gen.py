@@ -1,10 +1,12 @@
 import asyncio
 import logging
 import os.path
+import time
 from pathlib import Path
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
+import numpy as np
 import sounddevice
 from tqdm import tqdm
 from vosk_tts import Model, Synth
@@ -23,18 +25,22 @@ def canceler():
     sounddevice.stop()
 
 
-async def say(audio):
+async def say(audio: np.ndarray, sampling_rate: int) -> None:
     global output_q
     await output_q.put(
         Event(
             event_type=EventTypes.text,
-            value=audio,
+            value=audio.copy(),
             purpose="set_voice_buffer"
         )
     )
-    sounddevice.play(audio, samplerate=24000)
-    while sounddevice.get_status() == "play()":
-        await asyncio.sleep(0)
+
+    timer = (len(audio) / sampling_rate) + time.time()
+
+    sounddevice.play(audio, samplerate=sampling_rate)
+
+    while time.time() < timer:
+        await asyncio.sleep(0.1)
 
     await output_q.put(
         Event(
@@ -61,7 +67,7 @@ async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
                     text=event.value,
                     speaker_id=speaker_id
                 )
-                await say(audio=audio)
+                await say(audio=audio, sampling_rate=24000)
             except Exception as e:
                 logger.error(f"Ошибка озвучки для {event.value}", exc_info=True)
 

@@ -83,10 +83,6 @@ class ModuleQueues:
         self.input = AsyncModuleQueue(name, maxsize=50)
         self.output = AsyncModuleQueue(name, maxsize=50)
 
-    def set_active(self):
-        self.input.is_active = True
-        self.input.is_active = True
-
 
 @dataclass
 class Settings:
