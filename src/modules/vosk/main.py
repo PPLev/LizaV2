@@ -1,6 +1,6 @@
-from .recognizer import run_vosk, recognize_file_vosk
+from .recognizer import run_vosk, recognize_file_vosk, vosk_acceptor
 
-acceptor = None
+acceptor = vosk_acceptor
 
 sender = run_vosk
 

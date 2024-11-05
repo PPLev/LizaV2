@@ -8,10 +8,12 @@ import vosk
 import pyaudio
 import logging
 from event import EventTypes, Event
+from .audio_utils import filter_voice_gen
 
 logger = logging.getLogger("root")
 
 vosk_model = None
+buffer = None
 
 
 def file_recognizer(file):
@@ -43,11 +45,29 @@ async def recognize_file_vosk(event: Event):
     return event
 
 
+async def vosk_acceptor(
+        queue: asyncio.Queue = None,
+        config: dict = None,
+):
+    global buffer
+    while True:
+        await asyncio.sleep(0)
+
+        if not queue.empty():
+            event: Event = await queue.get()
+
+            if event.purpose == "set_voice_buffer":
+                buffer = event.value
+
+            if event.purpose != "unset_voice_buffer":
+                buffer = None
+
+
 async def run_vosk(
         queue: asyncio.Queue = None,
         config: dict = None,
 ):
-    global vosk_model
+    global vosk_model, buffer
 
     model_dir_path: str = config["model_dir_path"]
     input_device_id = config["input_device_id"]
@@ -86,6 +106,7 @@ async def run_vosk(
         await asyncio.sleep(0)
 
         data = stream.read(8000)
+        data = filter_voice_gen(data, buffer)
         if rec.AcceptWaveform(data):
             recognized_data = rec.Result()
             recognized_data = json.loads(recognized_data)
