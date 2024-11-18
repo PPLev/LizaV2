@@ -24,12 +24,24 @@ class CoreAlreadyRunningException(Exception):
 
 
 class Core:
+    """
+    Ядро Liza.
+
+    Ядро обрабатывает ивенты из очередей и взаимодействует с модульменеджером для работы с модулями.
+    """
     def __init__(
             self,
             connection_config_path="connections/config.yml",
             minimum_nlu_percent=0.69,
             forward_core_events=True,
     ):
+        """
+        Инициализация класса с настройками соединения и параметрами обработки NLU.
+
+        :param connection_config_path:  Путь к файлу конфигурации соединения (по умолчанию "connections/config.yml").
+        :param minimum_nlu_percent: Минимально допустимый процент уверенности NLU для определения успешного распознавания намерения (по умолчанию 0.69).
+        :param forward_core_events: Указывает, должны ли основные события передаваться дальше в обработку (по умолчанию True).
+        """
         self.MM = ModuleManager()
         self.nlu: NLU = None
         self.min_nlu_percent = minimum_nlu_percent
