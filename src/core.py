@@ -55,6 +55,9 @@ class Core:
         self.forward_core_events = forward_core_events
 
     def init(self):
+        """
+        Инициализация модудей/расширений/интентов/NLU
+        """
         self.MM.init_modules()
 
         for module in self.MM.name_list:
