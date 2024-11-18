@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   liza:
-    build: Liza
+    build: src
     # restart: always
     command: python main_api.py
     ports:
