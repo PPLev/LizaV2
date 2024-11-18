@@ -1,10 +1,11 @@
 .. _Core:
 
-****************
+================
 Ядро
-****************
+================
 
 Тут что-то интересное
 
-.. autoclass:: core.Core
-    :members: __init__, init
+.. autoclass:: src.core.Core
+    :members: __init__
+
