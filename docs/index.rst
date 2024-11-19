@@ -8,6 +8,7 @@
     :maxdepth: 2
 
     core
-    module_manager
     module/index
+    events
     connections
+    module_manager
