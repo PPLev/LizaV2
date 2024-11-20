@@ -2,12 +2,18 @@ import asyncio
 import json
 import os
 import wave
+from pathlib import Path
+from urllib.request import urlretrieve
+from zipfile import ZipFile
 
 import numpy as np
 import soundfile
 import vosk
 import pyaudio
 import logging
+
+from tqdm import tqdm
+
 from event import EventTypes, Event
 from .audio_utils import filter_voice_gen
 
@@ -66,22 +72,51 @@ async def vosk_acceptor(
                 logger.debug("vosk voice buffer unset!!!")
 
 
+def download_model(model_name):
+    MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
+    file_name = f"modules/vosk/{model_name}.zip"
+
+    def download_progress_hook(t):
+        last_b = [0]
+
+        def update_to(b=1, bsize=1, tsize=None):
+            if tsize not in (None, -1):
+                t.total = tsize
+            displayed = t.update((b - last_b[0]) * bsize)
+            last_b[0] = b
+            return displayed
+
+        return update_to
+
+    with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=(model_name + ".zip")) as t:
+        reporthook = download_progress_hook(t)
+        urlretrieve(
+            MODEL_PRE_URL + model_name + ".zip", file_name,
+            reporthook=reporthook,
+            data=None
+        )
+        t.total = t.n
+        with ZipFile(file_name, "r") as model_ref:
+            model_ref.extractall(f"modules/vosk/")
+        Path(file_name).unlink()
+
+
 async def run_vosk(
         queue: asyncio.Queue = None,
         config: dict = None,
 ):
     global vosk_model, buffer
 
-    model_dir_path: str = config["model_dir_path"]
+    model_name: str = config["model_name"]
     input_device_id = config["input_device_id"]
     send_text_event = config["send_text_event"]
     ext_only = config["ext_only"]
     trigger_name = config["trigger_name"]
 
+    model_dir_path = f"modules/vosk/{model_name}"
+
     if not os.path.isdir(model_dir_path):
-        logger.warning("Vosk: Папка модели воск не найдена\n"
-                       "Please download a model for your language from https://alphacephei.com/vosk/models")
-        raise FileNotFoundError
+        download_model(model_name=model_name)
 
     if vosk_model is None:
         vosk_model = vosk.Model(model_dir_path)  # Подгружаем модель

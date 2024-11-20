@@ -27,11 +27,12 @@ class Core:
     """
     Класс обрабатывает ивенты из очередей и взаимодействует с модульменеджером для работы с модулями.
     """
+
     def __init__(
             self,
-            connection_config_path="connections/config.yml",
-            minimum_nlu_percent=0.69,
-            forward_core_events=True,
+            connection_config_path: str = None,
+            minimum_nlu_percent: float = None,
+            forward_core_events: bool = None,
     ):
         """
         Инициализация класса с настройками соединения и параметрами обработки NLU.
@@ -42,15 +43,15 @@ class Core:
         """
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.min_nlu_percent = minimum_nlu_percent
-        config = config_loader(connection_config_path)
+        self.min_nlu_percent = minimum_nlu_percent or float(os.getenv("MINIMUM_NLU_PERCENT")) or 1.0
+        config = config_loader(connection_config_path or os.getenv("CONNECTION_CONFIG_PATH") or "connections/config.yml")
         self.connection_rules = config["rules"]
         self.io_pairs = config["io_pairs"]
         self._intent_examples = {}
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
-        self.forward_core_events = forward_core_events
+        self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS"))) or True
 
     def init(self):
         """
@@ -117,6 +118,7 @@ class Core:
                     await event.callback(data)
                 else:
                     await event.reply(data)
+
             return wrapper
 
         commands = {

@@ -1,2 +1,3 @@
 /src/modules/*/settings.json
 /src/cache/
+/src/.env

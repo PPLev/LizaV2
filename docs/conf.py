@@ -39,7 +39,7 @@ language = 'en'
 html_theme = 'furo'
 
 html_logo = "_static/logo.png"
-
+html_favicon = '_static/favicon.ico'
 html_theme_options = {
     "dark_css_variables": {
         "color-brand-primary": "#5C7F00",
