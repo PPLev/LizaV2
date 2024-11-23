@@ -116,7 +116,8 @@ async def run_client(queue: asyncio.Queue, config: dict):
 
     token = os.getenv("TG_BOT_TOKEN")
     if not token:
-        raise Exception("Telegram bot token not set, to use telegram bot - set token as TG_BOT_TOKEN in env")
+        logger.error("Telegram bot token not set, to use telegram bot - set token as TG_BOT_TOKEN in env")
+        return
 
     try:
         bot = Bot(token=token)
