@@ -13,7 +13,7 @@ from utils.classes import Context, Intent
 logging.basicConfig(
     encoding="utf-8",
     format="%(asctime)s %(levelname)s %(message)s",
-    level=logging.DEBUG
+    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper()),
 )
 logger = logging.getLogger("root")
 v = "0.1"
