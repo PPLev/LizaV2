@@ -75,13 +75,13 @@ async def updater_acceptor(queue: asyncio.Queue, config: dict):
                 try:
                     subprocess.check_call(["git", "pull"])
                     if autoreload:
-                        await event.reply("Обновилено до последнего коммита! Перезагружаюсь")
+                        await event.reply("Обновлено до последнего коммита! Перезагружаюсь")
                         await asyncio.sleep(2)
                         # TODO: м.б. поменять на модуль перезагрузки
                         os.execv(sys.executable, [sys.executable] + sys.argv)
 
                     else:
-                        await event.reply("Обновилено до последнего коммита! Не забудь запустить перезагрузку")
+                        await event.reply("Обновлено до последнего коммита! Не забудь запустить перезагрузку")
 
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Ошибка при обновлении репозитория: {e}", exc_info=True)

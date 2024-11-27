@@ -3,22 +3,26 @@
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.neighbors import KNeighborsClassifier
 import logging
+import os
 
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 import torch
 from collections import Counter
+
 logger = logging.getLogger(__name__)
+
 
 class NLU:
     # cointegrated/LaBSE-en-ru - 0.7
     # cointegrated/roberta-base-formality - 0.97
     # cointegrated/rubert-tiny2 - 0.86
     # cointegrated/rubert-tiny2-sentence-compression - 0.68
-    def __init__(self, intents: dict, model_name='cointegrated/rubert-tiny2-sentence-compression'):
+    def __init__(self, intents: dict, model_name: str = None):
         self.intents = intents
         self.example_vectors = []
         self.intent_names = []
+        model_name = model_name or os.getenv("MODEL_NAME") or "cointegrated/rubert-tiny2-sentence-compression"
         self.model = AutoModel.from_pretrained(model_name, cache_dir="cache")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
 
@@ -60,6 +64,7 @@ class NLU:
 
         logger.info(f'Updated {self.intents.keys()}')
 
+
 #
 # class NLU_SL:
 #     def __init__(self, intents: dict):
@@ -94,11 +99,14 @@ class NLU:
 
 if __name__ == '__main__':
     intents = {
-        "add_calendar": ["запомни какое-то событие", "запиши что мне надо", "добавь событие о чем-то", "напомни мне об этом позже", "напомни через час полить цветы"],
-        "get_calendar": ["напомни когда произойдет это", "скажи когда произойдет что-то", "через сколько дней будет это"],
+        "add_calendar": ["запомни какое-то событие", "запиши что мне надо", "добавь событие о чем-то",
+                         "напомни мне об этом позже", "напомни через час полить цветы"],
+        "get_calendar": ["напомни когда произойдет это", "скажи когда произойдет что-то",
+                         "через сколько дней будет это"],
         'music_d': ["сделай музыку тише", "уменьши громкость воспроизведения", "сделай звук тише"],
         'music_u': ["сделай музыку громче", "увелич громкость музыки", "сделай воспроизведение громче"],
-        'music_pp': ["останови воспроизведение музыки", "останови воспроизведение", "сотановить музыку", "поставь воспроизведение музыки на паузу"],
+        'music_pp': ["останови воспроизведение музыки", "останови воспроизведение", "сотановить музыку",
+                     "поставь воспроизведение музыки на паузу"],
         "check_upd": ["проверь есть ли обновления", "узнай есть ли новая версия", "проверь наличие новой версии"],
         "run_upd": ["выключи лампу", "выключи свет"],
     }

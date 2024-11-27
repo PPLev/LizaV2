@@ -111,15 +111,13 @@ async def msg_sender(queue: asyncio.Queue = None, **kwargs):
 async def run_client(queue: asyncio.Queue, config: dict):
     global bot, dp
 
-    env_path = config["env_path"]
     admin_id = config["admin_id"]
     guest_text = config["guest_text"]
 
-    if os.path.exists(env_path):
-        token = dotenv.dotenv_values(env_path)["TOKEN"]
-    else:
-        print(f"set telegram bot token as TOKEN in {env_path}")
-        raise FileNotFoundError
+    token = os.getenv("TG_BOT_TOKEN")
+    if not token:
+        logger.error("Telegram bot token not set, to use telegram bot - set token as TG_BOT_TOKEN in env")
+        return
 
     try:
         bot = Bot(token=token)

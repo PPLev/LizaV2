@@ -64,11 +64,14 @@ class Intent:
 
 
 class AsyncModuleQueue(asyncio.Queue):
-    def __init__(self, name: str, *args, **kwargs):
+    def __init__(self, name: str, is_active=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
+        self.is_active = is_active
 
     async def put(self, value):
+        if not self.is_active:
+            logger.error(f"Очередь {self.name} неактивна, возможно модуль выключен")
         if isinstance(value, Event) and value.from_module is None:
             value.from_module = self.name
 

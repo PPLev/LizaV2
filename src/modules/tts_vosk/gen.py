@@ -1,38 +1,58 @@
 import asyncio
+import logging
 import os.path
+import time
 from pathlib import Path
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
+import numpy as np
 import sounddevice
 from tqdm import tqdm
 from vosk_tts import Model, Synth
 
-from event import Event
+from event import Event, EventTypes
+
+logger = logging.getLogger("root")
 
 model: Model = None
 synth: Synth = None
 speaker_id: int = None
-
-
-is_say_allow = True
+output_q: asyncio.Queue = None
 
 
 def canceler():
-    global is_say_allow
-    is_say_allow = False
+    sounddevice.stop()
 
 
-async def say(audio):
-    global is_say_allow
-    for chunk in range(audio, len(audio), 4000):
-        await asyncio.sleep(0)
-        if not is_say_allow:
-            break
-        sounddevice.play(chunk, samplerate=24000)
-        sounddevice.wait()
+async def say(audio: np.ndarray, sampling_rate: int) -> None:
+    global output_q
+    await output_q.put(
+        Event(
+            event_type=EventTypes.text,
+            value=audio.copy(),
+            purpose="set_voice_buffer"
+        )
+    )
 
-    is_say_allow = True
+    timer = (len(audio) / sampling_rate) + time.time()
+
+    sounddevice.play(audio, samplerate=sampling_rate)
+
+    while time.time() < timer:
+        await asyncio.sleep(0.1)
+
+    await output_q.put(
+        Event(
+            event_type=EventTypes.text,
+            purpose="unset_voice_buffer"
+        )
+    )
+
+
+async def run_sender(queue: asyncio.Queue = None, config: dict = None):
+    global output_q
+    output_q = queue
 
 
 async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
@@ -42,12 +62,14 @@ async def gen_acceptor(queue: asyncio.Queue = None, config: dict = None):
 
         if not queue.empty():
             event: Event = await queue.get()
-            audio = synth.synth_audio(
-                text=event.value,
-                speaker_id=speaker_id
-            )
-
-            await say(audio=audio)
+            try:
+                audio = synth.synth_audio(
+                    text=event.value,
+                    speaker_id=speaker_id
+                )
+                await say(audio=audio, sampling_rate=24000)
+            except Exception as e:
+                logger.error(f"Ошибка озвучки для {event.value}", exc_info=True)
 
 
 def gen_voice(event: Event):
@@ -60,6 +82,7 @@ def gen_voice(event: Event):
 def download_model(model_name):
     MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
     file_name = f"modules/tts_vosk/{model_name}.zip"
+
     def download_progress_hook(t):
         last_b = [0]
 

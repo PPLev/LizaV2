@@ -1,0 +1,8 @@
+======
+Модуль
+======
+
+.. toctree::
+
+    queues
+    extensions

@@ -10,7 +10,23 @@ class EventTypes:
 
 
 class Event:
+    """
+    Ивент - еденица передачи данных между модулями. Ивент создатся любым модулем и попадает в исходящую очередь этого модуля.
+    Ивент содержит свойства по которым происходит маршрутизация иветнов между модулями.
+    """
+
     def __init__(self, event_type: str, value=None, purpose=None, out_queue: asyncio.Queue = None, from_module: str = None, **kwargs):
+        """
+        При создании ивента обязательным является указать его тип:
+
+        - ``EventTypes.text`` ("text") - Применяются правила маршрутизации
+        - ``EventTypes.user_command`` ("user_command") - Обрабатывается с помощью NLU.
+        - ``EventTypes.core_query`` ("core_query") - Обращение к ядру для получения данных о ядре/модулях/интентах/итд
+
+        :param event_type:  Тип ивента. От типа зависит то, как он будет обрабатываться.
+        :param value: Значение, в большинстве случаев строка, но использование других типов так-же возможно.
+        :param purpose: Назначение, нужно для разделения разных ивентов в рамках модуля.
+        """
         self.event_type = event_type
         self.value = value
         self.purpose = purpose
@@ -41,6 +57,12 @@ class Event:
         return data
 
     async def reply(self, value, new_purpose=None):
+        """
+        Создает `Event` и отправляет его в входную очередь модуля отправившего этот ивент
+
+        :param value: Значение ответа, будет использовано в качестве event.value при создании ответного ивента.
+        :param new_purpose: Опционально, назначение которое будет присвоено созданному ивенту.
+        """
         if self.out_queue:
             await self.out_queue.put(
                 Event(
