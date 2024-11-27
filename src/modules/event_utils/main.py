@@ -1,6 +1,5 @@
 import logging
-from .utils import num_to_word, change_type, change_purpose, json_find
-
+from .utils import num_to_word, change_type, change_purpose, json_find, set_value
 
 logger = logging.getLogger("root")
 
@@ -17,6 +16,10 @@ extensions = [
     {
         "name": "change_purpose",
         "function": change_purpose
+    },
+    {
+        "name": "set_value",
+        "function": set_value
     },
     {
         "name": "json_find",

@@ -7,6 +7,8 @@
     "input_device_id": -1,
     "send_text_event": false,
     "ext_only": false,
-    "trigger_name": "лиза|лиса"
+    "trigger_name": "лиза|лиса",
+    "filter_spk": false,
+    "allowed_spk": []
   }
 }

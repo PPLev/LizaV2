@@ -89,7 +89,7 @@ class Event:
     # def context(self):
     #     raise Exception("Context is not defined, see: https://github.com/AzimovIz/Liza/blob/dev/docs/docs/Контекст.md")
 
-    async def set_context(self, callback: callable, init_context_data: dict):
+    async def set_context(self, callback: callable, init_context_data: dict = None):
         # See Core.get_context_setter()
         pass
 

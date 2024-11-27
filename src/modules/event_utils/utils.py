@@ -23,6 +23,11 @@ def change_purpose(event: Event, new_purpose: str = "none"):
     return event
 
 
+def set_value(event: Event, new_value: str = "none"):
+    event.value = new_value
+    return event
+
+
 def json_find(event: Event):
     text = event.value
     try:

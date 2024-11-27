@@ -5,3 +5,17 @@ rules:
     before_ext: []
     purposes: [set_voice_buffer, unset_voice_buffer]
     acceptors: [vosk]
+  vosk_spk_unverified:
+    senders: []
+    before_ext: [[set_value, {new_value: "Я тебя не знаю, уходи"}]]
+    purposes: [spk_unverified]
+    acceptors: [vosk]
+
+intent_examples:
+  add_spk: [
+    "добавь голос нового пользователя",
+    "запиши голос",
+    "создай новую голосовую сигнатуру",
+    "добавь нового пользователя",
+    "запиши новый голос"
+  ]
