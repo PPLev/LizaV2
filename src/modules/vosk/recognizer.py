@@ -141,9 +141,9 @@ def load_spk_sig():
 
 def check_spk(spks, data):
     for spk in spks:
-        # print("X-vector:", data)
-        # print("Speaker distance:", cosine_dist(spk, data))
-        if cosine_dist(spk, data) < 0.7:
+        print("X-vector:", data)
+        print("Speaker distance:", cosine_dist(spk, data))
+        if cosine_dist(spk, data) < 0.68:
             return True
     return False
 
@@ -210,18 +210,6 @@ async def run_vosk(
             if voice_input_str != "" and voice_input_str is not None:
                 logger.info(f"Распознано Vosk: '{voice_input_str}'")
 
-                if filter_spk and not check_spk(allowed_spks, recognized_data["spk"]):
-                    await queue.put(
-                        Event(
-                            event_type=EventTypes.text,
-                            value=voice_input_str,
-                            purpose="spk_unverified",
-                            spk=recognized_data["spk"]
-                        )
-                    )
-                    continue
-
-
                 if len(names):
                     for name in names:
                         if name not in voice_input_str:
@@ -235,6 +223,18 @@ async def run_vosk(
                     else:
                         logger.debug("Имя не найдено!")
                         continue
+
+
+
+                if filter_spk and not ("spk" in recognized_data and check_spk(allowed_spks, recognized_data["spk"])):
+                    await queue.put(
+                        Event(
+                            event_type=EventTypes.text,
+                            value=voice_input_str,
+                            purpose="spk_unverified"
+                        )
+                    )
+                    continue
 
                 await queue.put(
                     Event(

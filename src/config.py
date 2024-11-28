@@ -119,7 +119,7 @@ class Connection:
         return event_connection_allowed
 
     async def run_event(self, event: Event, mm: ModuleManager):
-        if len(self.senders) and (event.from_module not in self.senders):
+        if bool(len(self.senders)) and (event.from_module not in self.senders):
             return
 
         if not self.check_event(event):

@@ -28,6 +28,11 @@ def set_value(event: Event, new_value: str = "none"):
     return event
 
 
+async def reply(event: Event):
+    await event.reply(event.value)
+    return event
+
+
 def json_find(event: Event):
     text = event.value
     try:

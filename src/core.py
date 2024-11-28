@@ -79,6 +79,7 @@ class Core:
         for connection in self.connection_rules:
             try:
                 connection.init_extensions(self.MM)
+                logger.debug(f"Правило {connection.name} добавлено!")
             except KeyError as e:
                 logger.error(f"Ошибка правила {connection.name} расширение {e.args} не найдено")
                 self.connection_rules.remove(connection)

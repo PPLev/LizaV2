@@ -7,9 +7,9 @@ rules:
     acceptors: [vosk]
   vosk_spk_unverified:
     senders: []
-    before_ext: [[set_value, {new_value: "Я тебя не знаю, уходи"}]]
+    before_ext: [[set_value, {new_value: "Я тебя не знаю, уходи"}], reply]
     purposes: [spk_unverified]
-    acceptors: [vosk]
+    acceptors: []
 
 intent_examples:
   add_spk: [
