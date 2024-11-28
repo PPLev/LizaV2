@@ -9,6 +9,7 @@
     "ext_only": false,
     "trigger_name": "лиза|лиса",
     "filter_spk": false,
+    "spk_model": "vosk-model-spk-0.4",
     "allowed_spk": []
   }
 }
