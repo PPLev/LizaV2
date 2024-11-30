@@ -1,0 +1,9 @@
+ver: "1.0"
+includes: []
+
+rules:
+  rule_1:
+    senders: [telegram_bot]
+    before_ext: [recognize_file_vosk, [change_type, {new_type: "user_command"}]]
+    purposes: [voice]
+    acceptors: [core]

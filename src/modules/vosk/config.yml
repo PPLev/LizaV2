@@ -1,0 +1,7 @@
+ver: "1.0"
+rules:
+  vosk_filter:
+    senders: []
+    before_ext: []
+    purposes: [set_voice_buffer, unset_voice_buffer]
+    acceptors: [vosk]
