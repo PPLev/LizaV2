@@ -43,7 +43,7 @@ class Core:
         """
         self.MM = ModuleManager()
         self.nlu: NLU = None
-        self.min_nlu_percent = minimum_nlu_percent or float(os.getenv("MINIMUM_NLU_PERCENT")) or 1.0
+        self.min_nlu_percent = minimum_nlu_percent or float(os.getenv("MINIMUM_NLU_PERCENT") or 1)
         config = config_loader(connection_config_path or os.getenv("CONNECTION_CONFIG_PATH") or "connections/config.yml")
         self.connection_rules = config["rules"]
         self.io_pairs = config["io_pairs"]
@@ -51,7 +51,7 @@ class Core:
         self.intents: List[Intent] = None
         self.contexts: Dict[str, Context] = {}
         self._is_running = False
-        self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS"))) or True
+        self.forward_core_events = forward_core_events or bool(int(os.getenv("FORWARD_CORE_EVENTS") or 1))
 
     def init(self):
         """
